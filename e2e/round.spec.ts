@@ -35,7 +35,6 @@ test("a round mounts three live subscriptions, plays to the bell, and unmounts t
   const socket = watchSubscriptions(page);
   await startRound(page);
   await expect(page.getByTestId("signal")).toHaveAttribute("data-state", "connected");
-  await expect(page.getByTestId("signal")).toHaveAttribute("data-state", "connected");
   await expect(page.getByTestId("hood-count")).toHaveText("3");
   await expect.poll(() => socket.open).toBe(3);
   for (const channel of ["den", "reach", "creekOverview"]) {
@@ -73,6 +72,24 @@ test("a hidden tab pauses the round, and coming back resumes it from a fresh sna
   await setVisibility("visible");
   await expect(page.getByTestId("log")).toContainText("fresh snapshot");
   await expect(page.getByTestId("time-left")).not.toHaveText(frozen ?? "", { timeout: 3_000 });
+});
+
+test("a round that starts in a hidden tab waits, then resumes from a fresh snapshot", async ({ page }) => {
+  await page.goto("/?round=40");
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.getByRole("button", { name: "Start round" }).click();
+  await expect(page.getByTestId("tuning")).toBeHidden({ timeout: 15_000 });
+  const frozen = await page.getByTestId("time-left").textContent();
+  await page.waitForTimeout(2_500);
+  await expect(page.getByTestId("time-left")).toHaveText(frozen ?? "");
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(page.getByTestId("log")).toContainText("fresh snapshot");
 });
 
 test("a stale creek pauses the round on the last known state, and a fresh snapshot resumes it", async ({ page, request }) => {

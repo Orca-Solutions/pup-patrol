@@ -88,13 +88,12 @@ export function App() {
   }, []);
 
   // Move focus to the new screen when the old one (and the button that was focused) goes away.
+  // Compares with the last screen rather than counting runs, so StrictMode's second run doesn't move focus on load.
   const main = useRef<HTMLElement>(null);
-  const firstScreen = useRef(true);
+  const shownScreen = useRef(screen.kind);
   useEffect(() => {
-    if (firstScreen.current) {
-      firstScreen.current = false;
-      return;
-    }
+    if (shownScreen.current === screen.kind) return;
+    shownScreen.current = screen.kind;
     main.current?.focus();
   }, [screen.kind]);
 

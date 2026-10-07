@@ -113,7 +113,7 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 - `test/creek.test.ts`: the recording validates against the copied schemas, and every game state shows up in it.
 - `scripts/test/check-release-pins.test.mjs`: the release-pin guard.
 - `e2e/round.spec.ts` (Playwright, against the local creek):
-  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down.
+  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down.
   - on Vite's dev server (`@dev` tests): the same round under React's StrictMode, which mounts every component twice and must still go live with exactly three subscriptions.
 - Not automated: `resync-required` and the **Re-tune** button (the local gateway has no way to force it), and a real network drop (hosted acceptance).
 

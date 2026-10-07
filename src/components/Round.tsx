@@ -92,6 +92,8 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
   if (!started && feed.live && feed.ready) {
     game.current = createGame({ pupsAt: pupsOf(feed), tickMs: props.tickMs, roundMs: props.roundMs });
     lastFrame.current = feed.reach?.lastFrame.frame;
+    // Started in a hidden tab: begin paused, so coming back resumes from a fresh snapshot.
+    if (!visible) pause(game.current);
   }
 
   scene.current.daylight = feed.overview?.daylight ?? "day";
@@ -118,7 +120,7 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
       lastFrame.current = feed.reach?.lastFrame.frame;
     }
     setHud(hudOf(current));
-  }, [active]);
+  }, [active, feed.ready]);
 
   useEffect(() => {
     if (game.current !== null && feed.den !== undefined && active) setPups(game.current, feed.den.pups);
