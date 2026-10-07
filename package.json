@@ -1,0 +1,44 @@
+{
+  "name": "pup-patrol",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pup Patrol: herd Sprout and Skipper home before the Beaver Flats camera trap fires. A React game on Lontra Creek's live channels, and the demo of StreamOtter's React hooks.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.15"
+  },
+  "scripts": {
+    "dev": "node dev/start.ts",
+    "dev:creek": "node dev/creek.ts",
+    "dev:web": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "generate": "streamotter generate --config creek/streamotter.json --out src/generated",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "test": "node --test --test-force-exit \"test/**/*.test.ts\" \"scripts/test/**/*.test.mjs\"",
+    "test:browser": "playwright test",
+    "check:release-pins": "node scripts/check-release-pins.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "streamotter": "file:vendor/streamotter-1.1.0-dev.0.tgz"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.13.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "5.9.3",
+    "vite": "8.3.3"
+  },
+  "overrides": {
+    "@streamotter/cli": "file:vendor/streamotter-cli-1.1.0-dev.0.tgz",
+    "@streamotter/client": "file:vendor/streamotter-client-1.1.0-dev.0.tgz",
+    "@streamotter/contracts": "file:vendor/streamotter-contracts-1.1.0-dev.0.tgz",
+    "@streamotter/gateway": "file:vendor/streamotter-gateway-1.1.0-dev.0.tgz",
+    "@streamotter/workbench": "file:vendor/streamotter-workbench-1.1.0-dev.0.tgz"
+  }
+}
