@@ -47,7 +47,7 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Run by hand (Actions → CI → Run workflow) until streamotter@1.1.0 is published: the vendored
+  # Run by hand (Actions → CI → Run workflow) until streamotter@1.0.0 (with the hooks) is published: the vendored
   # prerelease fails it by design, and a red check on every pull request would only teach people
   # to ignore it. When the pin moves to the registry, drop the `if` so it runs everywhere, make it
   # required, and run it first in the deploy workflow.

@@ -4,7 +4,7 @@ Herd Sprout and Skipper home before the Beaver Flats camera trap fires.
 
 Pup Patrol is a sixty-second arcade game on [Lontra Creek](https://streamotter.dev), the fictional river-otter study that runs on real Kafka as StreamOtter's live demo. You are Pebble (LO-07). Her pups wander out of Holt A toward a camera trap; you nudge them home. The pups come out when the creek's field station says they're out, and the trap fires when its camera does: the game reads three live channels through [StreamOtter](https://github.com/jfricano/StreamOtter)'s React hooks, and pauses on the last known creek whenever it can't hear it.
 
-It is the demo for `streamotter/react` (StreamOtter V1.3, npm `1.1.0`). It will live at **lontracreek.dev**, linked from streamotter.dev/pup-patrol.
+It is the demo for `streamotter/react`, StreamOtter's React hooks, which ship in npm `1.0.0`, the public launch. It will live at **lontracreek.dev**, linked from streamotter.dev/pup-patrol.
 
 > Status: in development. It builds against a packed prerelease of the hooks in `vendor/`; nothing is deployed. See [docs/PLAN.md](docs/PLAN.md) for the plan and [docs/DESIGN.md](docs/DESIGN.md) for how it's built.
 
@@ -66,7 +66,7 @@ npm test               # the recording must still fit the schemas
 
 ## StreamOtter versions
 
-Until `streamotter@1.1.0` is on npm, `package.json` installs the hooks from packed tarballs in `vendor/` (built from StreamOtter's hooks branch). Before anything goes live, `streamotter` is pinned to the published `1.1.0` exactly, `vendor/` and the `overrides` are removed, and `npm run check:release-pins` passes. Until then CI runs that check only by hand (it fails on the vendored build by design); after the pin moves, it runs on every change and the deploy workflow, when there is one, will run it first, so a vendored build can be tested but never deployed.
+Until `streamotter@1.0.0` is on npm, `package.json` installs the hooks from packed tarballs in `vendor/` (built from StreamOtter's hooks branch). Before anything goes live, `streamotter` is pinned to the published `1.0.0` exactly, `vendor/` and the `overrides` are removed, and `npm run check:release-pins` passes. Until then CI runs that check only by hand (it fails on the vendored build by design); after the pin moves, it runs on every change and the deploy workflow, when there is one, will run it first, so a vendored build can be tested but never deployed.
 
 ## Deploy
 

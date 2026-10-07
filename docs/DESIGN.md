@@ -31,7 +31,7 @@ How the game is built. [PLAN.md](PLAN.md) is the approved plan (what and why); t
 | `scripts/sync-creek.mjs` | Refreshes both `creek/` files from a lontra-creek checkout. | — |
 | `scripts/check-release-pins.mjs` | Refuses a deploy build that doesn't install StreamOtter from the npm registry at an exact version. | — |
 
-The game never imports lontra-creek or StreamOtter's source. What it shares with them is copied (`creek/`) or published (`streamotter` from npm, a packed tarball in `vendor/` until 1.1.0 is published).
+The game never imports lontra-creek or StreamOtter's source. What it shares with them is copied (`creek/`) or published (`streamotter` from npm, a packed tarball in `vendor/` until 1.0.0 is published).
 
 ## How the hooks feed the canvas
 
@@ -119,6 +119,6 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 
 ## Open items
 
-- Pin `streamotter@1.1.0` from npm once published and delete `vendor/` (the release-pin guard fails until then, by design).
+- Pin `streamotter@1.0.0` from npm once published and delete `vendor/` (the release-pin guard fails until then, by design).
 - Hosted acceptance on the real deployment, including a real connection drop.
 - A Cloudflare Pages project and DNS for lontracreek.dev (jason's go).
