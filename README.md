@@ -4,7 +4,7 @@ Herd Sprout and Skipper home before the Beaver Flats camera trap fires.
 
 Pup Patrol is a sixty-second arcade game on [Lontra Creek](https://streamotter.dev), the fictional river-otter study that runs on real Kafka as StreamOtter's live demo. You are Pebble (LO-07). Her pups wander out of Holt A toward a camera trap; you nudge them home. The pups come out when the creek's field station says they're out, and the trap fires when its camera does: the game reads three live channels through [StreamOtter](https://github.com/jfricano/StreamOtter)'s React hooks, and pauses on the last known creek whenever it can't hear it.
 
-It is the demo for `streamotter/react`, StreamOtter's React hooks, which ship in npm `1.0.0`, the public launch. It will live at **lontracreek.dev**, linked from streamotter.dev/pup-patrol.
+It is the demo for `streamotter/react`, StreamOtter's React hooks, which ship in npm `1.0.0`, the public launch. It will live at **lontracreek.com**, linked from streamotter.dev/pup-patrol.
 
 > Status: in development. It builds against a packed prerelease of the hooks in `vendor/`; nothing is deployed. See [docs/PLAN.md](docs/PLAN.md) for the plan and [docs/DESIGN.md](docs/DESIGN.md) for how it's built.
 
@@ -70,7 +70,7 @@ Until `streamotter@1.0.0` is on npm, `package.json` installs the hooks from pack
 
 ## Deploy
 
-Not set up yet; nothing deploys without the owner's go. The plan: a static build (`VITE_FIELD_STATION_ORIGIN` unset, so it reads `https://demo.streamotter.dev`) to a Cloudflare Pages project for lontracreek.dev, the domain on Cloudflare DNS. The demo backend must have the game switched on: lontra-creek's `GAME_ORIGIN=https://lontracreek.dev` (off by default) lets the field station answer the game's `/api/config` and `/api/badge` and lets the gateway accept its sockets.
+Not set up yet; nothing deploys without the owner's go. The plan: a static build (`VITE_FIELD_STATION_ORIGIN` unset, so it reads `https://demo.streamotter.dev`) to a Cloudflare Pages project for lontracreek.com, the domain on Cloudflare DNS. The demo backend must have the game switched on: lontra-creek's `GAME_ORIGIN=https://lontracreek.com` (off by default) lets the field station answer the game's `/api/config` and `/api/badge` and lets the gateway accept its sockets.
 
 ## License
 

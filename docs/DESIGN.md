@@ -95,7 +95,7 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 | Gateway address | `GET {API}/api/config` → `{ gatewayOrigin, gatewayPath, mode, tickMs }` | `API` is `https://demo.streamotter.dev` in production, `VITE_FIELD_STATION_ORIGIN` to override. |
 | Token | `POST {API}/api/badge` → `{ token }` | Always a new volunteer badge for a request from the game's origin; no cookie is sent or set. The request has no body or custom headers, so it needs no preflight. The provider's `getToken` asks for a fresh one on every connection, as the site does. |
 | Channels | `den` `{ holtId: "A" }`, `reach` `{ reachId: "beaver-flats" }`, `creekOverview` `{ watershed: "lontra" }` | All public: any volunteer badge may read them. The restricted `holt` channel (with the grid reference) is never used. |
-| Origin | `https://lontracreek.dev` | Switched on by lontra-creek's `GAME_ORIGIN` (off by default): the gateway then accepts its sockets, and the field station answers it on `GET /api/config`, `GET /api/status` and `POST /api/badge` only (the game calls the first and last); never the Lab, the sandbox or notebooks. |
+| Origin | `https://lontracreek.com` | Switched on by lontra-creek's `GAME_ORIGIN` (off by default): the gateway then accepts its sockets, and the field station answers it on `GET /api/config`, `GET /api/status` and `POST /api/badge` only (the game calls the first and last); never the Lab, the sandbox or notebooks. |
 
 ## Where the build differs from the plan
 
@@ -121,4 +121,4 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 
 - Pin `streamotter@1.0.0` from npm once published and delete `vendor/` (the release-pin guard fails until then, by design).
 - Hosted acceptance on the real deployment, including a real connection drop.
-- A Cloudflare Pages project and DNS for lontracreek.dev (jason's go).
+- A Cloudflare Pages project and DNS for lontracreek.com (jason's go).
