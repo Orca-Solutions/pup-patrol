@@ -1,9 +1,10 @@
 /**
  * The page: start screen, round, end screen, and the drawer, all under one
  * StreamOtterProvider when the demo backend answers. When it doesn't, rounds replay a
- * recording of the creek, labeled as such, instead of pretending to be live.
+ * recording of the creek, labeled as such, instead of pretending to be live. If the
+ * recording can't load either, the page says so rather than playing an empty creek.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchCreekConfig, getToken, type CreekConfig } from "./backend.ts";
 import { recordedCreek, useLiveCreek, type Recording, type UseCreek } from "./creek.ts";
 import { ROUND_MS } from "./game/engine.ts";
@@ -15,7 +16,8 @@ import { StreamOtterProvider } from "./streamotter.ts";
 type Mode =
   | { kind: "loading" }
   | { kind: "live"; config: CreekConfig }
-  | { kind: "recorded"; reason: string; recording: Recording };
+  | { kind: "recorded"; reason: string; recording: Recording }
+  | { kind: "unavailable"; reason: string };
 
 type Screen = { kind: "start" } | { kind: "round"; id: number } | { kind: "end"; result: RoundResult };
 
@@ -60,18 +62,41 @@ export function App() {
     loadRecording().then(recording => {
       setMode({ kind: "recorded", reason, recording });
       setScreen(current => current.kind === "round" ? { kind: "round", id: current.id + 1 } : current);
-    }).catch(() => setMode({ kind: "recorded", reason, recording: { startTick: 0, tickMs: 2_000, initial: [], ticks: [] } }));
+    }).catch(() => {
+      setMode({ kind: "unavailable", reason: `${reason} The recording didn't load either.` });
+      setScreen({ kind: "start" });
+    });
   };
 
   useEffect(() => {
+    // StrictMode runs this twice in development: the first run's abort must not count as the backend failing.
+    let disposed = false;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6_000);
     fetchCreekConfig(controller.signal)
-      .then(config => setMode({ kind: "live", config }))
-      .catch(() => switchToRecording("The Lontra Creek demo backend didn't answer."))
+      .then(config => {
+        if (!disposed) setMode({ kind: "live", config });
+      })
+      .catch(() => {
+        if (!disposed) switchToRecording("The Lontra Creek demo backend didn't answer.");
+      })
       .finally(() => clearTimeout(timeout));
-    return () => controller.abort();
+    return () => {
+      disposed = true;
+      controller.abort();
+    };
   }, []);
+
+  // Move focus to the new screen when the old one (and the button that was focused) goes away.
+  const main = useRef<HTMLElement>(null);
+  const firstScreen = useRef(true);
+  useEffect(() => {
+    if (firstScreen.current) {
+      firstScreen.current = false;
+      return;
+    }
+    main.current?.focus();
+  }, [screen.kind]);
 
   const tickMs = mode.kind === "live" ? mode.config.tickMs : mode.kind === "recorded" ? mode.recording.tickMs : 2_000;
   const useCreek: UseCreek | null = useMemo(
@@ -98,13 +123,16 @@ export function App() {
         <div className="top-actions">
           {mode.kind === "live" && <SignalBar />}
           {mode.kind === "recorded" && <span className="signal signal-recorded" data-testid="signal" data-state="recorded">Recording</span>}
-          <button type="button" className="link-button" aria-expanded={drawer} onClick={() => setDrawer(open => !open)}>Under the hood</button>
+          <button type="button" className="link-button" aria-expanded={drawer} aria-controls="drawer" onClick={() => setDrawer(open => !open)}>Under the hood</button>
         </div>
       </header>
 
-      <main className="main">
+      <main className="main" ref={main} tabIndex={-1}>
         {mode.kind === "recorded" && (
           <p className="notice" role="status">{mode.reason} Rounds replay a recording of the creek; it is not live.</p>
+        )}
+        {mode.kind === "unavailable" && (
+          <p className="notice notice-error" role="alert" data-testid="unavailable">{mode.reason} Try reloading the page.</p>
         )}
 
         {screen.kind === "start" && (
@@ -125,7 +153,7 @@ export function App() {
               <li>{Math.round(length / 1000)} seconds a round</li>
             </ul>
             <button type="button" className="button button-big" onClick={start} disabled={useCreek === null}>
-              {useCreek === null ? "Finding the creek…" : "Start round"}
+              {mode.kind === "unavailable" ? "No creek to play" : useCreek === null ? "Finding the creek…" : "Start round"}
             </button>
             {best !== null && <p className="small">Your best: {best}</p>}
           </section>

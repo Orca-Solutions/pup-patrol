@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import {
-  createGame, FIELD, fieldTick, hash, inCone, inHolt, pause, POINTS, pupsHome, resync, setPups, step, trapFired,
+  createGame, FIELD, fieldTick, hash, inCone, inHolt, MAX_STEP_MS, pause, POINTS, pupsHome, resync, setPups, step, trapFired,
   type GameState, type Input, type Vec
 } from "../src/game/engine.ts";
 
@@ -127,6 +127,16 @@ describe("the camera trap", () => {
     assert.match(state.message, /Sprout caught on camera \(CT-2 00042\)/);
   });
 
+  test("a frame taken while the round is paused doesn't count", () => {
+    const state = createGame({ pupsAt: "out" });
+    placePup(state, 0, inView);
+    pause(state);
+    trapFired(state, frame);
+    assert.equal(state.score, 0);
+    assert.equal(state.caught, 0);
+    assert.equal(state.flash, null);
+  });
+
   test("a frame with no pups in it costs nothing", () => {
     const state = createGame({ pupsAt: "in-den" });
     trapFired(state, { frame: "CT-2 00043", species: "American beaver", count: 2 });
@@ -192,6 +202,15 @@ describe("stale and resync", () => {
     assert.equal(JSON.stringify({ pups: state.pups, pebble: state.pebble, elapsed: state.elapsedMs, ticks: state.ticks, score: state.score }), before);
   });
 
+  test("the trap's flash freezes mid-flash while paused", () => {
+    const state = createGame({ pupsAt: "in-den" });
+    trapFired(state, frame);
+    step(state, 100, still);
+    pause(state);
+    animate(state, 2_000);
+    assert.equal(state.flash?.age, 100);
+  });
+
   test("the fresh snapshot resets the pups, keeps Pebble, and resumes", () => {
     const state = createGame({ pupsAt: "out" });
     placePup(state, 0, inView);
@@ -219,6 +238,15 @@ describe("the bell", () => {
     animate(state, 1_000);
     trapFired(state, frame);
     assert.equal(state.score, 2 * POINTS.homeAtBell, "nothing scores after the bell");
+  });
+
+  test("a long frame (a stalled or hidden tab) advances the clock by at most MAX_STEP_MS", () => {
+    const state = createGame({ pupsAt: "in-den", roundMs: 10_000 });
+    step(state, 40_000, still);
+    assert.equal(state.elapsedMs, MAX_STEP_MS);
+    assert.equal(state.phase, "playing");
+    step(state, -5, still);
+    assert.equal(state.elapsedMs, MAX_STEP_MS, "a clock that runs backwards adds nothing");
   });
 
   test("time spent paused doesn't count", () => {

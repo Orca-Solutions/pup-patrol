@@ -131,6 +131,8 @@ export function recordedCreek(recording: Recording, tickMs: number): UseCreek {
       return () => clearInterval(timer);
     }, []);
     useReportHood("recorded", []);
-    return { ...state, live: true, ready: true, problems: [], canResync: false, resync: noResync, recorded: true };
+    // Ready once the recording has given every channel a value (its opening state always does).
+    const ready = state.den !== undefined && state.reach !== undefined && state.overview !== undefined;
+    return { ...state, live: true, ready, problems: ready ? [] : ["recording: incomplete"], canResync: false, resync: noResync, recorded: true };
   };
 }

@@ -7,6 +7,7 @@
   --accent: #1f6b4f;
   --accent-ink: #ffffff;
   --warn: #8a4b12;
+  --error: #a3261b;
   --stale: #5c5c5c;
   --radius: 14px;
   color-scheme: light;
@@ -22,6 +23,7 @@
     --accent: #48b08a;
     --accent-ink: #0b130f;
     --warn: #f0b070;
+    --error: #ff8a7a;
     --stale: #9a9a9a;
     color-scheme: dark;
   }
@@ -50,6 +52,7 @@ a { color: var(--accent); }
 .top-actions { display: flex; align-items: center; gap: 14px; }
 
 .main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 16px; }
+.main:focus { outline: none; }
 
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
@@ -81,6 +84,7 @@ kbd {
   background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--warn);
   border-radius: 8px; padding: 10px 14px; margin: 0 0 12px;
 }
+.notice-error { border-left-color: var(--error); }
 
 .round { display: flex; flex-direction: column; gap: 10px; }
 .hud { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-variant-numeric: tabular-nums; }

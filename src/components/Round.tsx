@@ -8,6 +8,10 @@
  * going through React per frame; it refreshes the score and clock a few times a second, and
  * each of those renders calls the hooks again with new params objects, which keeps the same
  * subscriptions.
+ *
+ * The round plays only while the creek is live and the page is visible. A hidden tab pauses it
+ * like a stale creek, and coming back resumes it from a fresh snapshot, so nothing the player
+ * couldn't see scores against them.
  */
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { CreekFeed, UseCreek } from "../creek.ts";
@@ -34,10 +38,24 @@ interface Hud {
   message: string;
 }
 
+/** Steering keys by physical key (`KeyboardEvent.code`), so Shift or a keyboard layout can't strand one. */
 const KEYS: Record<string, [number, number]> = {
   ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-  w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0], W: [0, -1], S: [0, 1], A: [-1, 0], D: [1, 0]
+  KeyW: [0, -1], KeyS: [0, 1], KeyA: [-1, 0], KeyD: [1, 0]
 };
+
+const reducedMotion = (): boolean => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Whether the page is visible: browsers stop animating hidden tabs. */
+function useVisible(): boolean {
+  const [visible, setVisible] = useState(() => document.visibilityState === "visible");
+  useEffect(() => {
+    const change = (): void => setVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", change);
+    return () => document.removeEventListener("visibilitychange", change);
+  }, []);
+  return visible;
+}
 
 const pupsOf = (feed: CreekFeed): PupsAt => feed.den?.pups ?? "in-den";
 
@@ -53,15 +71,17 @@ function hudOf(game: GameState): Hud {
 
 export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: number; onEnd(result: RoundResult): void; onUseRecording?: () => void }) {
   const feed = props.useCreek();
+  const visible = useVisible();
   countRender();
 
   const canvas = useRef<HTMLCanvasElement>(null);
   const game = useRef<GameState | null>(null);
   const input = useRef<Input>({ direction: { x: 0, y: 0 }, toward: null });
   const keys = useRef(new Set<string>());
-  const scene = useRef<Scene>({ daylight: "day", weather: "clear", stale: false, now: 0 });
+  const scene = useRef<Scene>({ daylight: "day", weather: "clear", stale: false, now: 0, reducedMotion: reducedMotion() });
   const lastFrame = useRef<string | undefined>(undefined);
   const ended = useRef(false);
+  const bell = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onEnd = useRef(props.onEnd);
   onEnd.current = props.onEnd;
   const [hud, setHud] = useState<Hud | null>(null);
@@ -77,6 +97,8 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
   scene.current.daylight = feed.overview?.daylight ?? "day";
   scene.current.weather = feed.overview?.weather ?? "clear";
   scene.current.stale = started && !feed.live;
+  // The engine runs only while the creek is live and someone can see it.
+  const active = feed.live && visible;
 
   useEffect(() => {
     if (started) return;
@@ -84,11 +106,11 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
     return () => clearTimeout(timer);
   }, [started]);
 
-  // Live or not: pause on anything stale, and reset from the fresh snapshot when it's back.
+  // Pause on anything stale (or a hidden tab), and reset from the fresh snapshot when it's back.
   useEffect(() => {
     const current = game.current;
     if (current === null) return;
-    if (!feed.live) {
+    if (!active) {
       pause(current);
     } else if (current.phase === "paused" && feed.ready) {
       resync(current, pupsOf(feed));
@@ -96,19 +118,19 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
       lastFrame.current = feed.reach?.lastFrame.frame;
     }
     setHud(hudOf(current));
-  }, [feed.live]);
+  }, [active]);
 
   useEffect(() => {
-    if (game.current !== null && feed.den !== undefined && feed.live) setPups(game.current, feed.den.pups);
+    if (game.current !== null && feed.den !== undefined && active) setPups(game.current, feed.den.pups);
   }, [feed.den?.pups]);
 
   useEffect(() => {
-    if (game.current !== null && feed.overviewRevision !== undefined && feed.live) fieldTick(game.current, feed.overviewRevision);
+    if (game.current !== null && feed.overviewRevision !== undefined && active) fieldTick(game.current, feed.overviewRevision);
   }, [feed.overviewRevision]);
 
   useEffect(() => {
     const frame = feed.reach?.lastFrame;
-    if (game.current === null || frame === undefined || !feed.live) return;
+    if (game.current === null || frame === undefined || !active) return;
     if (frame.frame !== lastFrame.current && frame.frame !== "none") {
       trapFired(game.current, { frame: frame.frame, species: frame.species, count: frame.count });
       setHud(hudOf(game.current));
@@ -129,21 +151,31 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
       input.current.direction = { x: Math.sign(x), y: Math.sign(y) };
     };
     const down = (event: KeyboardEvent): void => {
-      if (KEYS[event.key] === undefined) return;
+      // Leave shortcuts (Ctrl/Cmd/Alt + a key) to the browser: they may never send a keyup.
+      if (KEYS[event.code] === undefined || event.ctrlKey || event.metaKey || event.altKey) return;
       event.preventDefault();
-      keys.current.add(event.key);
+      keys.current.add(event.code);
       input.current.toward = null;
       update();
     };
     const up = (event: KeyboardEvent): void => {
-      keys.current.delete(event.key);
+      keys.current.delete(event.code);
+      update();
+    };
+    // Keys released while the window wasn't listening would otherwise stay held.
+    const letGo = (): void => {
+      keys.current.clear();
       update();
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
+    window.addEventListener("blur", letGo);
+    document.addEventListener("visibilitychange", letGo);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", letGo);
+      document.removeEventListener("visibilitychange", letGo);
     };
   }, []);
 
@@ -175,13 +207,16 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
           ended.current = true;
           const result = { score: current.score, caught: current.caught, home: pupsHome(current), quit: false };
           // Let the bell's frame show before the end screen replaces the round.
-          setTimeout(() => onEnd.current(result), 900);
+          bell.current = setTimeout(() => onEnd.current(result), 900);
         }
       }
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(bell.current);
+    };
   }, []);
 
   const pointer = (event: ReactPointerEvent<HTMLCanvasElement>): void => {
@@ -200,7 +235,8 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
     onEnd.current({ score: current?.score ?? 0, caught: current?.caught ?? 0, home: current === null ? 0 : pupsHome(current), quit: true });
   };
 
-  const paused = started && !feed.live;
+  // The receiver overlay is for a stale creek, not a hidden tab (nobody sees that), and not over the bell.
+  const paused = started && !feed.live && game.current?.phase !== "over";
   return (
     <section className="round" aria-label="Pup Patrol round">
       <div className="hud" data-testid="hud">
@@ -228,7 +264,7 @@ export function Round(props: { useCreek: UseCreek; tickMs: number; roundMs: numb
         />
         {feed.recorded && <div className="badge-recorded" data-testid="recorded">Recording · not live</div>}
         {!started && (
-          <div className="overlay" data-testid="tuning">
+          <div className="overlay" data-testid="tuning" role="status">
             <p className="overlay-title">Tuning the receiver…</p>
             <p>Waiting for Holt A, the Beaver Flats trap and the creek overview to come in live.</p>
             {feed.problems.length > 0 && <p className="problems">{feed.problems.join(" · ")}</p>}

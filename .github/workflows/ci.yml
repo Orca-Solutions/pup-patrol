@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || ((github.ref == 'refs/heads/main' && github.run_id) || github.ref) }}
@@ -46,11 +47,13 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Informational until streamotter@1.1.0 is published: the vendored prerelease fails it by design.
-  # Make it required, and a gate on the deploy workflow, when the pin moves to the registry.
+  # Run by hand (Actions → CI → Run workflow) until streamotter@1.1.0 is published: the vendored
+  # prerelease fails it by design, and a red check on every pull request would only teach people
+  # to ignore it. When the pin moves to the registry, drop the `if` so it runs everywhere, make it
+  # required, and run it first in the deploy workflow.
   release-pins:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

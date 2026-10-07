@@ -5,8 +5,10 @@
  * one manifest.
  *
  * A branch may carry locally packed StreamOtter tarballs (vendor/, `file:` specs,
- * overrides, a shrinkwrap) to test an unpublished release. The deploy workflow runs
- * this first, so such a branch can be tested but never built for deployment.
+ * overrides, a shrinkwrap) to test an unpublished release. Once streamotter@1.1.0 is
+ * pinned, CI runs this on every change and the deploy workflow (still to be written) runs
+ * it first, so such a branch can be tested but never built for deployment. Until then it
+ * runs only by hand (CI's workflow_dispatch).
  * Usage: node scripts/check-release-pins.mjs [root]
  */
 import { existsSync, readFileSync } from "node:fs";

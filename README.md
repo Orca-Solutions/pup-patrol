@@ -37,7 +37,7 @@ npm run dev
 Other ways to run:
 
 - `npm run dev:creek` and `npm run dev:web` separately.
-- Against a Lontra Creek stack on your machine: `VITE_FIELD_STATION_ORIGIN=http://127.0.0.1:7402 npm run dev:web` (that field station allows the Vite origins in development).
+- Against a Lontra Creek stack on your machine: `VITE_FIELD_STATION_ORIGIN=http://127.0.0.1:7402 npm run dev:web` (its field station and development gateways allow the Vite origins).
 - With no backend at all, the page says so and replays the recording, labeled "Recording · not live".
 
 To pause the creek's source and watch the round go stale: `curl -X POST http://127.0.0.1:7502/api/dev/pause-source`, then `.../api/dev/resume-source`.
@@ -48,7 +48,8 @@ To pause the creek's source and watch the round go stale: `curl -X POST http://1
 npm run typecheck
 npm test               # game rules, the recording against the channel schemas, the release-pin guard
 npm run build          # production bundle in dist/
-npm run test:browser   # Playwright: a round, the stale state, the recording fallback
+npm run test:browser   # Playwright: a round (subscriptions counted on the socket), a hidden tab, the stale state,
+                       # the recording fallback; the round again on Vite's dev server, under StrictMode
 ```
 
 For the browser tests, Playwright needs Chromium (`npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE`).
@@ -65,11 +66,11 @@ npm test               # the recording must still fit the schemas
 
 ## StreamOtter versions
 
-Until `streamotter@1.1.0` is on npm, `package.json` installs the hooks from packed tarballs in `vendor/` (built from StreamOtter's hooks branch). Before anything goes live, `streamotter` is pinned to the published `1.1.0` exactly, `vendor/` and the `overrides` are removed, and `npm run check:release-pins` passes. The deploy workflow runs that check first, so a vendored build can be tested but never deployed.
+Until `streamotter@1.1.0` is on npm, `package.json` installs the hooks from packed tarballs in `vendor/` (built from StreamOtter's hooks branch). Before anything goes live, `streamotter` is pinned to the published `1.1.0` exactly, `vendor/` and the `overrides` are removed, and `npm run check:release-pins` passes. Until then CI runs that check only by hand (it fails on the vendored build by design); after the pin moves, it runs on every change and the deploy workflow, when there is one, will run it first, so a vendored build can be tested but never deployed.
 
 ## Deploy
 
-Not set up yet; nothing deploys without the owner's go. The plan: a static build (`VITE_FIELD_STATION_ORIGIN` unset, so it reads `https://demo.streamotter.dev`) to a Cloudflare Pages project for lontracreek.dev, the domain on Cloudflare DNS. The demo backend must allow the origin: lontra-creek's gateway lists `https://lontracreek.dev` in `allowedOrigins`, and its field station reads `GAME_ORIGIN` (default `https://lontracreek.dev`) for the three API routes the game calls.
+Not set up yet; nothing deploys without the owner's go. The plan: a static build (`VITE_FIELD_STATION_ORIGIN` unset, so it reads `https://demo.streamotter.dev`) to a Cloudflare Pages project for lontracreek.dev, the domain on Cloudflare DNS. The demo backend must have the game switched on: lontra-creek's `GAME_ORIGIN=https://lontracreek.dev` (off by default) lets the field station answer the game's `/api/config` and `/api/badge` and lets the gateway accept its sockets.
 
 ## License
 

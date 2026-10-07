@@ -85,6 +85,11 @@ export const FIELD = {
 
 export const ROUND_MS = 60_000;
 export const POINTS = { homePerTick: 1, caught: -5, homeAtBell: 10 } as const;
+/**
+ * The most one animation frame advances the round. A frame after a stall (a busy main thread,
+ * or a tab the browser stopped animating) counts as this long, so the clock never jumps.
+ */
+export const MAX_STEP_MS = 250;
 const PEBBLE_SPEED = 270;
 const HERD_RADIUS = 84;
 const PUSH_SPEED = 260;
@@ -205,7 +210,8 @@ export function fieldTick(state: GameState, seed: string): void {
 
 /** A new frame from the Beaver Flats camera trap: every pup in view outside the holt is caught on camera. */
 export function trapFired(state: GameState, frame: TrapFrame): void {
-  if (state.phase === "over") return;
+  // Only a round in play scores: a frame taken while paused (or after the bell) never counts.
+  if (state.phase !== "playing") return;
   const caught = state.pups.filter(pup => !pup.home && inCone(pup.pos));
   for (const pup of caught) pup.caught = 900;
   state.caught += caught.length;
@@ -237,10 +243,12 @@ export function resync(state: GameState, pupsAt: PupsAt): void {
   state.message = "Back on the receiver: a fresh snapshot reset the pups.";
 }
 
-export function step(state: GameState, dtMs: number, input: Input): void {
-  if (state.flash !== null) state.flash.age += dtMs;
+export function step(state: GameState, frameMs: number, input: Input): void {
+  const dtMs = Math.min(Math.max(0, frameMs), MAX_STEP_MS);
+  // A paused round is frozen, the trap's flash included; after the bell it fades out.
+  if (state.flash !== null && state.phase !== "paused") state.flash.age += dtMs;
   if (state.phase !== "playing") return;
-  const dt = Math.min(dtMs, 100) / 1000;
+  const dt = dtMs / 1000;
   state.elapsedMs = Math.min(state.roundMs, state.elapsedMs + dtMs);
 
   // Pebble swims where she's steered.

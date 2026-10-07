@@ -1,7 +1,8 @@
 /**
  * Draws one frame of the field on a canvas: the creek, Holt A, the Beaver Flats camera trap
  * and its view, Pebble and the pups. Daylight and weather come from the creek overview; a
- * stale creek is drawn in grey, frozen where it was last known.
+ * stale creek is drawn in grey, frozen where it was last known. With reduced motion, the
+ * water, rain and pups hold still and the trap's flash is a soft glow, not a bright burst.
  */
 import { FIELD, inCone, type GameState, type Pup, type Vec } from "./engine.ts";
 
@@ -12,6 +13,8 @@ export interface Scene {
   stale: boolean;
   /** Milliseconds since the page started, for idle animation. */
   now: number;
+  /** The visitor asked for reduced motion (`prefers-reduced-motion`). */
+  reducedMotion: boolean;
 }
 
 const SKY: Record<Scene["daylight"], { grass: string; grassDeep: string; water: string; tint: string | null }> = {
@@ -71,11 +74,12 @@ function holt(ctx: CanvasRenderingContext2D): void {
   label(ctx, "Holt A", { x, y: y + r + 26 });
 }
 
-function trap(ctx: CanvasRenderingContext2D, flashAge: number | null): void {
+function trap(ctx: CanvasRenderingContext2D, flashAge: number | null, reducedMotion: boolean): void {
   const { x, y } = FIELD.trap;
   const { direction, half, range } = FIELD.cone;
   const flashing = flashAge !== null && flashAge < 450;
-  ctx.fillStyle = flashing ? `rgba(255, 255, 230, ${0.75 * (1 - flashAge / 450)})` : "rgba(255, 255, 255, 0.10)";
+  const glow = reducedMotion ? 0.3 : 0.75 * (1 - (flashAge ?? 0) / 450);
+  ctx.fillStyle = flashing ? `rgba(255, 255, 230, ${glow})` : "rgba(255, 255, 255, 0.10)";
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.arc(x, y, range, direction - half, direction + half);
@@ -146,10 +150,12 @@ export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Sce
   ctx.save();
   ctx.clearRect(0, 0, FIELD.width, FIELD.height);
   if (scene.stale) ctx.filter = "grayscale(1) brightness(0.85)";
-  creek(ctx, colors, scene.stale ? 0 : scene.now);
+  // Idle animation time: stopped while stale or for reduced motion.
+  const now = scene.stale || scene.reducedMotion ? 0 : scene.now;
+  creek(ctx, colors, now);
   holt(ctx);
-  trap(ctx, state.flash?.age ?? null);
-  for (const value of state.pups) pup(ctx, value, scene.stale ? 0 : scene.now);
+  trap(ctx, state.flash?.age ?? null, scene.reducedMotion);
+  for (const value of state.pups) pup(ctx, value, now);
   otter(ctx, state.pebble, 20, "#7b5130", 1);
   label(ctx, "Pebble (you)", { x: state.pebble.x, y: state.pebble.y - 26 });
 
@@ -158,8 +164,8 @@ export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Sce
     ctx.lineWidth = 1;
     const drops = scene.weather === "storm" ? 140 : 70;
     for (let i = 0; i < drops; i++) {
-      const x = (i * 73 + scene.now / 3) % FIELD.width;
-      const y = (i * 151 + scene.now / 1.5) % FIELD.height;
+      const x = (i * 73 + now / 3) % FIELD.width;
+      const y = (i * 151 + now / 1.5) % FIELD.height;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x - 4, y + 12);

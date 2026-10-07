@@ -16,7 +16,7 @@ export function Drawer(props: { open: boolean; onClose(): void; mode: string }) 
   }, [props.open]);
   if (!props.open) return null;
   return (
-    <aside className="drawer" aria-label="Under the hood" data-testid="drawer">
+    <aside id="drawer" className="drawer" aria-label="Under the hood" data-testid="drawer">
       <div className="drawer-head">
         <h2>Under the hood</h2>
         <button type="button" className="link-button" onClick={props.onClose}>Close</button>
@@ -49,7 +49,7 @@ export function Drawer(props: { open: boolean; onClose(): void; mode: string }) 
           </tbody>
         </table>
       ) : (
-        <p className="drawer-note">No subscriptions: the round's components are unmounted, so the hooks have unsubscribed.</p>
+        <p className="drawer-note">No subscriptions mounted: the round's components are gone, and a hook's subscription ends when its component unmounts.</p>
       )}
       <p className="drawer-note">
         Each round renders several times a second and builds new params objects every time; the hooks compare params by
