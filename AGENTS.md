@@ -4,11 +4,11 @@ Standing rules for Claude and Codex. Read SOFTWARE_OPERATING_GUIDE.md v2.3 for t
 
 ## Commands
 <!-- Fill in. Delete anything an agent could infer from the code. -->
-- Install:
-- Dev server:
-- Test (all / single):
-- Lint and typecheck:
-- Build:
+- Install: `npm ci` (Node 24). StreamOtter comes from the tarballs in `vendor/` until `streamotter@1.0.0` is on npm.
+- Dev server: `npm run dev` (local creek: gateway 7500, /api 7502; plus Vite on 5173); `npm run dev:creek` / `npm run dev:web` run one side.
+- Test (all / single): `npm test` / `node --test test/engine.test.ts`; browser: `npm run test:browser` (Playwright; set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use a preinstalled Chromium).
+- Lint and typecheck: `npm run typecheck` (no linter).
+- Build: `npm run build`. After changing `creek/streamotter.json`, run `npm run generate`.
 
 ## Read first
 - PROJECT_BRIEF.md (scope, acceptance criteria, permissions), WORKING_RECORD.md (current state), docs/README.md (index), docs/decisions/ (ADRs).
