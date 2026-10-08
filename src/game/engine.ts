@@ -28,6 +28,11 @@ export interface Pup {
   home: boolean;
   /** Field ticks a herded-home pup stays put before wandering again while the pups are out. */
   settle: number;
+  /**
+   * Field ticks a pup that just came out won't go back in. Herding can't send it home, and it
+   * keeps clear of the holt, so camping at the holt mouth doesn't work: you chase it home instead.
+   */
+  curious: number;
   /** Milliseconds left on the "caught on camera" highlight. */
   caught: number;
 }
@@ -94,6 +99,7 @@ const PEBBLE_SPEED = 270;
 const HERD_RADIUS = 84;
 const PUSH_SPEED = 260;
 const SETTLE_TICKS = 2;
+const CURIOUS_TICKS = 2;
 const MARGIN = 24;
 
 /** A number in [0, 1) from a string: the same creek update always moves the pups the same way. */
@@ -140,7 +146,7 @@ function placePup(index: number, pupsAt: PupsAt): Vec {
 function placedPups(pupsAt: PupsAt): Pup[] {
   return (["Sprout", "Skipper"] as const).map((name, index) => {
     const pos = placePup(index, pupsAt);
-    return { name, pos, target: { ...pos }, home: pupsAt !== "out", settle: 0, caught: 0 };
+    return { name, pos, target: { ...pos }, home: pupsAt !== "out", settle: 0, curious: 0, caught: 0 };
   });
 }
 
@@ -184,18 +190,21 @@ export function fieldTick(state: GameState, seed: string): void {
           pup.settle -= 1;
           return;
         }
-        // Out of the holt mouth (outside the holt, so it isn't home again on the next frame), toward the creek.
+        // Out of the holt mouth and a dash toward the creek, too curious to go back in for a while.
         const side = index === 0 ? -1 : 1;
         pup.home = false;
+        pup.curious = CURIOUS_TICKS;
         pup.pos = { x: FIELD.holt.x + FIELD.holt.r + 4, y: FIELD.holt.y + side * 12 };
-        pup.target = clampToField({ x: FIELD.holt.x + FIELD.holt.r + 30 + r1 * 40, y: FIELD.holt.y + side * (20 + r2 * 40) });
+        pup.target = clampToField({ x: FIELD.holt.x + FIELD.holt.r + 90 + r1 * 50, y: FIELD.holt.y + side * (30 + r2 * 50) });
         return;
       }
+      if (pup.curious > 0) pup.curious -= 1;
       // Wander downstream toward Beaver Flats, where the trap is.
       const step = { x: 50 + r1 * 45, y: (r2 - 0.5) * 110 + (FIELD.trap.y - pup.pos.y) * 0.12 };
       pup.target = clampToField({ x: Math.min(FIELD.trap.x - 40, pup.pos.x + step.x), y: pup.pos.y + step.y });
     } else if (!pup.home) {
-      // Their mother is calling: head for the holt on their own.
+      // Their mother is calling: head for the holt on their own, curious or not.
+      pup.curious = 0;
       const away = distance(pup.pos, FIELD.holt);
       const stride = Math.min(away, 90 + r1 * 20);
       pup.target = {
@@ -278,7 +287,15 @@ export function step(state: GameState, frameMs: number, input: Input): void {
       pup.target = clampToField({ x: pup.target.x + (moved.x - pup.pos.x), y: pup.target.y + (moved.y - pup.pos.y) });
       pup.pos = moved;
     }
-    if (!pup.home && inHolt(pup.pos)) {
+    if (!pup.home && pup.curious > 0 && inHolt(pup.pos)) {
+      // A curious pup won't go back in: it slips out to the holt's edge.
+      const off = distance(pup.pos, FIELD.holt);
+      const dir = off === 0 ? { x: 1, y: 0 } : { x: (pup.pos.x - FIELD.holt.x) / off, y: (pup.pos.y - FIELD.holt.y) / off };
+      const edge = { x: FIELD.holt.x + dir.x * (FIELD.holt.r + 4), y: FIELD.holt.y + dir.y * (FIELD.holt.r + 4) };
+      pup.target = clampToField({ x: pup.target.x + (edge.x - pup.pos.x), y: pup.target.y + (edge.y - pup.pos.y) });
+      pup.pos = edge;
+    }
+    if (!pup.home && pup.curious === 0 && inHolt(pup.pos)) {
       pup.home = true;
       pup.settle = SETTLE_TICKS;
       pup.target = { ...pup.pos };

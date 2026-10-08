@@ -68,10 +68,10 @@ The field is 960 × 540 logical pixels: Holt A on the left, the Beaver Flats cam
 
 | Event | Comes from | What happens |
 | --- | --- | --- |
-| Field tick | each new `creekOverview` revision | Every pup gets its next target. Pups **out**: a pup outside wanders 50–95 px toward the trap; a pup at home leaves the holt mouth unless it is still settling. Pups **in-den** (or `none`): pups outside head home on their own, about 100 px a tick. Each pup at home scores 1. Target jitter is a hash of the revision, so the same creek always moves the pups the same way. |
+| Field tick | each new `creekOverview` revision | Every pup gets its next target. Pups **out**: a pup outside wanders 50–95 px toward the trap; a pup at home leaves the holt mouth unless it is still settling, dashing 90–140 px out, and stays *curious* for 2 ticks. Pups **in-den** (or `none`): pups outside stop being curious and head home on their own, about 100 px a tick. Each pup at home scores 1. Target jitter is a hash of the revision, so the same creek always moves the pups the same way. |
 | Den update | `den` (`pups`: `in-den`, `out`, `none`) | Sets the mode for the next tick. |
 | Trap fires | a new `reach.lastFrame.frame` at Beaver Flats | Every pup outside the holt and inside the camera's wedge is caught on camera: −5 each. The frame's real id and species show in the log line. |
-| Every frame | the animation loop (a frame counts for at most 250 ms, so a stall never jumps the clock) | Pups ease toward their targets (about 95% of the way in one tick). Pebble moves from the keyboard (arrows or WASD) or toward a pointer or touch. A pup within 84 px of Pebble is pushed away from her, and the push moves its target too, so herding sticks. A pup pushed into the holt is home and settles for 2 ticks before it can wander again. |
+| Every frame | the animation loop (a frame counts for at most 250 ms, so a stall never jumps the clock) | Pups ease toward their targets (about 95% of the way in one tick). Pebble moves from the keyboard (arrows or WASD) or toward a pointer or touch. A pup within 84 px of Pebble is pushed away from her, and the push moves its target too, so herding sticks. A pup pushed into the holt is home and settles for 2 ticks before it can wander again. A curious pup can't be pushed home: it slips back out to the holt's edge, so waiting at the holt mouth doesn't keep the pups in (owner's playtest, October 8, 2026). |
 | Bell | 60 s of live time | Each pup at home scores 10. |
 
 ### States
