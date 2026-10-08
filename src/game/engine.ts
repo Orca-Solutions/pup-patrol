@@ -70,7 +70,7 @@ export interface GameState {
 export interface Input {
   /** A direction from the keyboard, each axis -1 to 1. */
   direction: Vec;
-  /** A point to swim toward (pointer or touch), or null. */
+  /** A point to move toward (pointer or touch), or null. */
   toward: Vec | null;
 }
 
@@ -251,7 +251,7 @@ export function step(state: GameState, frameMs: number, input: Input): void {
   const dt = dtMs / 1000;
   state.elapsedMs = Math.min(state.roundMs, state.elapsedMs + dtMs);
 
-  // Pebble swims where she's steered.
+  // Pebble moves where she's steered.
   let move: Vec = input.direction;
   if (input.toward !== null) {
     const away = distance(input.toward, state.pebble);

@@ -138,8 +138,8 @@ export function App() {
           <section className="card start" aria-labelledby="start-title">
             <h1 id="start-title">Herd the pups home before the camera trap fires.</h1>
             <p>
-              You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, wander out of Holt A
-              toward the Beaver Flats camera trap. Swim close to nudge them back. Every pup in the picture when the trap
+              You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, are too young to swim,
+              so they wander along the bank from Holt A toward the Beaver Flats camera trap. Get close to nudge them back. Every pup in the picture when the trap
               flashes costs you points; every pup home at the bell earns them.
             </p>
             <p className="small">
@@ -148,7 +148,7 @@ export function App() {
               the round pauses on the last known creek.
             </p>
             <ul className="controls">
-              <li><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to swim, or drag on the field</li>
+              <li><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move, or drag on the field</li>
               <li>{Math.round(length / 1000)} seconds a round</li>
             </ul>
             <button type="button" className="button button-big" onClick={start} disabled={useCreek === null}>
