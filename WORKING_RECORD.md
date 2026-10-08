@@ -19,10 +19,10 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 3. Deploy the game to Cloudflare Pages at lontracreek.com, and set up DNS.
 4. Set `GAME_ORIGIN=https://lontracreek.com` in the shared host's `lontra.env` and restart the field station and the gateway.
 
-## Verification (merged main)
+## Verification (head of the polish PR, #2)
 
 - `npm run typecheck`: clean.
-- `npm test`: 31 pass (two new engine tests: the camping exploit with an active herder, and a curious pup still going home when called).
+- `npm test`: 33 pass (merged main had 29). The new engine tests cover the camping exploit with an active herder, the same exploit after a pause and resync, the dash out of the holt, and a curious pup still going home when called.
 - `npm run test:browser`: 6 pass, covering the build and the StrictMode dev server.
 - CI runs the release-pin check only when started by hand. It fails by design until step 1 above.
 
@@ -30,3 +30,4 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
 - Independent review, October 6. The findings were fixed in f2f88d0 and a4ee655: the StrictMode dev fallback, a hidden tab pausing the round (including a round that starts hidden), stuck keys, weak e2e assertions, and doc mismatches. A fresh re-check verified the fixes.
 - After that re-check, the only changes have been docs and the domain (6fb7dbb, then the lontracreek.com commit) and this scaffold fill-in. No code changed.
+- Independent review of the polish PR, October 8. It found one major issue: a pause and resync (a quick tab switch) placed the pups at the holt mouth without being curious, which brought the exploit back. That is fixed, and resynced pups that are out are now curious. Two minor findings, a missing test for the dash and a mislabeled verification heading, and one doc nit are also fixed.

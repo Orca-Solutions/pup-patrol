@@ -146,7 +146,7 @@ function placePup(index: number, pupsAt: PupsAt): Vec {
 function placedPups(pupsAt: PupsAt): Pup[] {
   return (["Sprout", "Skipper"] as const).map((name, index) => {
     const pos = placePup(index, pupsAt);
-    return { name, pos, target: { ...pos }, home: pupsAt !== "out", settle: 0, curious: 0, caught: 0 };
+    return { name, pos, target: { ...pos }, home: pupsAt !== "out", settle: 0, curious: pupsAt === "out" ? CURIOUS_TICKS : 0, caught: 0 };
   });
 }
 
