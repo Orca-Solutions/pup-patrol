@@ -8,6 +8,7 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 - **In progress:** the polish PR after #1 (October 8, from the owner's playtest of the preview):
   - "Swim" becomes "move": the field is the riverbank, and pups that young can't swim yet.
   - Camping at the holt mouth no longer keeps the pups home: a pup that just came out is curious for 2 ticks and can't be pushed back in.
+  - The header carries StreamOtter's branding (owner's ask, October 9): streamotter.dev's mark and the name, linking to streamotter.dev in a new tab.
 - **Backend:** the den channel, the `GAME_ORIGIN` switch, the recording and the streamotter.dev explainer are in jfricano/lontra-creek#49, a draft held by the Lontra Creek main freeze.
 - **Domain:** lontracreek.com (owner's choice, October 6). Nothing is deployed.
 - **Scope and spec:** `PROJECT_BRIEF.md` and `docs/SPEC.md` are still empty. The approved plan is [docs/PLAN.md](docs/PLAN.md), and [docs/DESIGN.md](docs/DESIGN.md) describes what was built and where it differs from the plan.
@@ -23,7 +24,7 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
 - `npm run typecheck`: clean.
 - `npm test`: 33 pass (merged main had 29). The new engine tests cover the camping exploit with an active herder, the same exploit after a pause and resync, the dash out of the holt, and a curious pup still going home when called.
-- `npm run test:browser`: 6 pass, covering the build and the StrictMode dev server.
+- `npm run test:browser`: 7 pass, covering the build and the StrictMode dev server. The new test checks the header's StreamOtter link, and that the header fits a 320 px screen.
 - CI runs the release-pin check only when started by hand. It fails by design until step 1 above.
 
 ## Review dispositions

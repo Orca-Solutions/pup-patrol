@@ -23,6 +23,7 @@ How the game is built. [PLAN.md](PLAN.md) is the approved plan (what and why); t
 | `src/components/Round.tsx` | One round: calls the feed hook, hands creek changes to the engine in effects, runs the animation loop, renders the HUD and overlays. | engine, render, creek |
 | `src/components/SignalBar.tsx` | The connection state as signal bars. | streamotter.ts |
 | `src/components/Drawer.tsx` | Under the hood. | hood.ts |
+| `src/components/StreamOtterLink.tsx` | The header's StreamOtter lockup: streamotter.dev's brand mark (`src/assets/streamotter-mark.svg`, copied from lontra-creek's `apps/site/src/assets/brand/mark.svg`) and the name, linking to streamotter.dev in a new tab. The mark's S and whiskers follow the color scheme, as on streamotter.dev. | none |
 | `src/App.tsx` | Start, round and end screens; live or recorded mode; the `StreamOtterProvider` around the page in live mode. | everything above |
 | `src/generated/` | `streamotter generate` output for `creek/streamotter.json`. Never edited. | — |
 | `creek/streamotter.json` | The game's copy of the field station's public channel definitions (`den`, `reach`, `creekOverview`), as a fixture-mode project for the local creek. | — |

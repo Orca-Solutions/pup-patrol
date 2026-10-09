@@ -12,6 +12,7 @@ import { Drawer } from "./components/Drawer.tsx";
 import { Round, type RoundResult } from "./components/Round.tsx";
 import { SignalBar } from "./components/SignalBar.tsx";
 import { StreamOtterProvider } from "./streamotter.ts";
+import { StreamOtterLink } from "./components/StreamOtterLink.tsx";
 
 type Mode =
   | { kind: "loading" }
@@ -116,6 +117,8 @@ export function App() {
     <div className="page">
       <header className="top">
         <div className="brand">
+          <StreamOtterLink />
+          <span className="brand-divider" aria-hidden="true" />
           <span className="brand-name">Pup Patrol</span>
           <span className="brand-sub">on Lontra Creek</span>
         </div>
