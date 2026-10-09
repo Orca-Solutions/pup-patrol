@@ -144,7 +144,8 @@ test("the start screen shows a still of the field above the start card", async (
   const card = await page.locator(".start").boundingBox();
   expect(card!.y).toBeLessThan(frame!.y + frame!.height);
   expect(card!.y).toBeGreaterThan(frame!.y);
-  // The title and Start round show without scrolling at 1280 × 800.
+  // In live mode, the title and Start round show without scrolling at 1280 × 800.
+  await page.evaluate(() => document.fonts.ready);
   const button = await page.getByRole("button", { name: "Start round" }).boundingBox();
   expect(button!.y + button!.height).toBeLessThanOrEqual(800);
   // Phones crop the still to about 2:1.
