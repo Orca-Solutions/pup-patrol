@@ -18,6 +18,7 @@ function placePup(state: GameState, index: number, at: Vec): void {
   const pup = state.pups[index]!;
   pup.home = false;
   pup.settle = 0;
+  pup.curious = 0;
   pup.pos = { ...at };
   pup.target = { ...at };
 }
@@ -146,7 +147,7 @@ describe("the camera trap", () => {
 });
 
 describe("Pebble", () => {
-  test("swims with the keyboard and stays on the field", () => {
+  test("moves with the keyboard and stays on the field", () => {
     const state = createGame({ pupsAt: "in-den" });
     const start = { ...state.pebble };
     animate(state, 500, { direction: { x: 1, y: 0 }, toward: null });
@@ -155,7 +156,7 @@ describe("Pebble", () => {
     assert.ok(state.pebble.x <= FIELD.width && state.pebble.y <= FIELD.height);
   });
 
-  test("swims toward a pointer and stops there", () => {
+  test("moves toward a pointer and stops there", () => {
     const state = createGame({ pupsAt: "in-den" });
     const target = { x: 600, y: 400 };
     animate(state, 4_000, { direction: { x: 0, y: 0 }, toward: target });
@@ -187,6 +188,69 @@ describe("Pebble", () => {
     assert.equal(state.pups[0]!.home, true, "settled for two ticks");
     fieldTick(state, "s3");
     assert.equal(state.pups[0]!.home, false, "then out again, while the pups are out");
+  });
+
+  test("camping at the holt mouth doesn't keep a pup home: a pup that just came out won't go back in", () => {
+    const state = createGame({ pupsAt: "in-den" });
+    state.pebble = { x: FIELD.holt.x + FIELD.holt.r + 60, y: FIELD.holt.y };
+    setPups(state, "out");
+    fieldTick(state, "c1");
+    assert.equal(pupsHome(state), 0, "both came out");
+    // Pebble stays just beyond Sprout, on the far side from the holt, pushing her straight back in.
+    const sprout = state.pups[0]!;
+    const camp = (ms: number): void => {
+      for (let t = 0; t < ms; t += 16) {
+        const off = Math.hypot(sprout.pos.x - FIELD.holt.x, sprout.pos.y - FIELD.holt.y);
+        const behind = { x: sprout.pos.x + ((sprout.pos.x - FIELD.holt.x) / off) * 30, y: sprout.pos.y + ((sprout.pos.y - FIELD.holt.y) / off) * 30 };
+        step(state, 16, { direction: { x: 0, y: 0 }, toward: behind });
+      }
+    };
+    camp(2_000);
+    assert.equal(sprout.home, false, "her nudges couldn't send Sprout back in");
+    assert.ok(!inHolt(sprout.pos), "Sprout kept clear of the holt");
+    fieldTick(state, "c2");
+    camp(2_000);
+    assert.equal(sprout.home, false, "still curious on the next tick");
+    fieldTick(state, "c3");
+    camp(2_000);
+    assert.equal(sprout.home, true, "two ticks after coming out, she can be herded home");
+  });
+
+  test("a pup that comes out dashes well clear of the holt mouth", () => {
+    const state = createGame({ pupsAt: "in-den" });
+    state.pebble = { x: 40, y: 80 }; // out of the way
+    setPups(state, "out");
+    fieldTick(state, "d1");
+    for (const pup of state.pups) assert.ok(pup.target.x - (FIELD.holt.x + FIELD.holt.r) >= 90, `${pup.name} dashes out`);
+  });
+
+  test("a pause and a fresh snapshot don't reopen the holt mouth: pups placed out are curious too", () => {
+    const state = createGame({ pupsAt: "out" });
+    assert.ok(state.pups.every(pup => pup.curious > 0), "a round that starts with the pups out");
+    pause(state);
+    resync(state, "out");
+    assert.ok(state.pups.every(pup => pup.curious > 0), "and after a resync");
+    // Pebble right beyond Sprout, pushing her toward the holt.
+    const sprout = state.pups[0]!;
+    for (let t = 0; t < 2_000; t += 16) {
+      const off = Math.hypot(sprout.pos.x - FIELD.holt.x, sprout.pos.y - FIELD.holt.y);
+      const behind = { x: sprout.pos.x + ((sprout.pos.x - FIELD.holt.x) / off) * 30, y: sprout.pos.y + ((sprout.pos.y - FIELD.holt.y) / off) * 30 };
+      step(state, 16, { direction: { x: 0, y: 0 }, toward: behind });
+    }
+    assert.equal(sprout.home, false);
+  });
+
+  test("a curious pup still heads home when its mother calls", () => {
+    const state = createGame({ pupsAt: "in-den" });
+    state.pebble = { x: 40, y: 80 }; // out of the way
+    setPups(state, "out");
+    fieldTick(state, "m1");
+    setPups(state, "in-den");
+    for (let i = 2; i < 8; i++) {
+      fieldTick(state, `m${i}`);
+      animate(state, 2_000);
+    }
+    assert.equal(pupsHome(state), 2);
   });
 });
 

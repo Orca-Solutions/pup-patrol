@@ -8,10 +8,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchCreekConfig, getToken, type CreekConfig } from "./backend.ts";
 import { recordedCreek, useLiveCreek, type Recording, type UseCreek } from "./creek.ts";
 import { ROUND_MS } from "./game/engine.ts";
+import type { Scene } from "./game/render.ts";
+import type { CreekOverview } from "./generated/streamotter.generated.ts";
 import { Drawer } from "./components/Drawer.tsx";
 import { Round, type RoundResult } from "./components/Round.tsx";
 import { SignalBar } from "./components/SignalBar.tsx";
 import { StreamOtterProvider } from "./streamotter.ts";
+import { StreamOtterLink } from "./components/StreamOtterLink.tsx";
+import { FieldStill } from "./components/FieldStill.tsx";
 
 type Mode =
   | { kind: "loading" }
@@ -49,6 +53,20 @@ function roundMs(): number {
 async function loadRecording(): Promise<Recording> {
   const module = await import("../creek/pup-patrol.json");
   return module.default as unknown as Recording;
+}
+
+/**
+ * The start screen's still. A recorded round starts on the recording's first creek frame, so the
+ * still shows that. A live round has no creek before it mounts its subscriptions (the drawer
+ * shows them mounting with the round), so its still is a placeholder: day, clear, the pups in
+ * the holt. While the creek is being found, the field is empty.
+ */
+function stillScene(mode: Mode): { daylight: Scene["daylight"]; weather: Scene["weather"]; empty: boolean } {
+  if (mode.kind === "recorded") {
+    const first = mode.recording.initial.find(record => record.channel === "creekOverview")?.data as CreekOverview | undefined;
+    return { daylight: first?.daylight ?? "day", weather: first?.weather ?? "clear", empty: false };
+  }
+  return { daylight: "day", weather: "clear", empty: mode.kind === "loading" };
 }
 
 export function App() {
@@ -116,13 +134,15 @@ export function App() {
     <div className="page">
       <header className="top">
         <div className="brand">
+          <StreamOtterLink />
+          <span className="brand-divider" aria-hidden="true" />
           <span className="brand-name">Pup Patrol</span>
           <span className="brand-sub">on Lontra Creek</span>
         </div>
         <div className="top-actions">
           {mode.kind === "live" && <SignalBar />}
           {mode.kind === "recorded" && <span className="signal signal-recorded" data-testid="signal" data-state="recorded">Recording</span>}
-          <button type="button" className="link-button" aria-expanded={drawer} aria-controls="drawer" onClick={() => setDrawer(open => !open)}>Under the hood</button>
+          <button type="button" className="link-button" aria-expanded={drawer} aria-controls="drawer" onClick={() => setDrawer(open => !open)}>Live data</button>
         </div>
       </header>
 
@@ -134,12 +154,14 @@ export function App() {
           <p className="notice notice-error" role="alert" data-testid="unavailable">{mode.reason} Try reloading the page.</p>
         )}
 
+        {screen.kind === "start" && mode.kind !== "unavailable" && <FieldStill {...stillScene(mode)} />}
         {screen.kind === "start" && (
-          <section className="card start" aria-labelledby="start-title">
+          <section className={mode.kind === "unavailable" ? "card start" : "card start start-over-still"} aria-labelledby="start-title">
+            <p className="eyebrow">A {Math.round(length / 1000)}-second game · Lontra Creek</p>
             <h1 id="start-title">Herd the pups home before the camera trap fires.</h1>
             <p>
-              You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, wander out of Holt A
-              toward the Beaver Flats camera trap. Swim close to nudge them back. Every pup in the picture when the trap
+              You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, are too young to swim,
+              so they wander along the bank from Holt A toward the Beaver Flats camera trap. Get close to nudge them back. Every pup in the picture when the trap
               flashes costs you points; every pup home at the bell earns them.
             </p>
             <p className="small">
@@ -148,7 +170,7 @@ export function App() {
               the round pauses on the last known creek.
             </p>
             <ul className="controls">
-              <li><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to swim, or drag on the field</li>
+              <li><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move, or drag on the field</li>
               <li>{Math.round(length / 1000)} seconds a round</li>
             </ul>
             <button type="button" className="button button-big" onClick={start} disabled={useCreek === null}>

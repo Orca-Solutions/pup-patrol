@@ -19,10 +19,12 @@ How the game is built. [PLAN.md](PLAN.md) is the approved plan (what and why); t
 | `src/streamotter.ts` | The typed hooks (`createStreamOtterHooks<AppChannels>()`) and the provider. One of two files that import StreamOtter. | `streamotter/react`, generated types |
 | `src/creek.ts` | Where a round gets the creek: `useLiveCreek` (three `useSubscription` calls and `useConnectionState`, the other StreamOtter file) or `recordedCreek(recording, tickMs)`, both returning a `CreekFeed`. | streamotter.ts, hood.ts |
 | `src/backend.ts` | The field station's `/api/config` and `/api/badge`, and `getToken` for the provider. | fetch |
-| `src/hood.ts` | A tiny store for the "Under the hood" drawer: mounted subscriptions, connection state, render count. | React |
+| `src/hood.ts` | A tiny store for the "Live data" drawer: mounted subscriptions, connection state, render count. | React |
 | `src/components/Round.tsx` | One round: calls the feed hook, hands creek changes to the engine in effects, runs the animation loop, renders the HUD and overlays. | engine, render, creek |
 | `src/components/SignalBar.tsx` | The connection state as signal bars. | streamotter.ts |
-| `src/components/Drawer.tsx` | Under the hood. | hood.ts |
+| `src/components/Drawer.tsx` | The Live data drawer. (It was "Under the hood" until October 9, 2026; that is now the name of StreamOtter's docs series.) | hood.ts |
+| `src/components/StreamOtterLink.tsx` | The header's StreamOtter lockup: streamotter.dev's horizontal lockup (`src/assets/streamotter-lockup.svg`, copied from lontra-creek's `apps/site/src/assets/brand/lockup-horizontal.svg`), linking to streamotter.dev in a new tab. Its S, "Stream" and whiskers follow the color scheme, as on streamotter.dev. | none |
+| `src/components/FieldStill.tsx` | The start screen's still of the field: the round's first frame (pups in the holt, Pebble at her start) drawn once with the renderer's `draw`, and again once Figtree loads. The empty field while the creek is being found. Decorative. | engine, render |
 | `src/App.tsx` | Start, round and end screens; live or recorded mode; the `StreamOtterProvider` around the page in live mode. | everything above |
 | `src/generated/` | `streamotter generate` output for `creek/streamotter.json`. Never edited. | — |
 | `creek/streamotter.json` | The game's copy of the field station's public channel definitions (`den`, `reach`, `creekOverview`), as a fixture-mode project for the local creek. | — |
@@ -68,10 +70,10 @@ The field is 960 × 540 logical pixels: Holt A on the left, the Beaver Flats cam
 
 | Event | Comes from | What happens |
 | --- | --- | --- |
-| Field tick | each new `creekOverview` revision | Every pup gets its next target. Pups **out**: a pup outside wanders 50–95 px toward the trap; a pup at home leaves the holt mouth unless it is still settling. Pups **in-den** (or `none`): pups outside head home on their own, about 100 px a tick. Each pup at home scores 1. Target jitter is a hash of the revision, so the same creek always moves the pups the same way. |
+| Field tick | each new `creekOverview` revision | Every pup gets its next target. Pups **out**: a pup outside wanders 50–95 px toward the trap; a pup at home leaves the holt mouth unless it is still settling, dashing to a point 90–140 px past the holt's edge, and stays *curious* for 2 ticks. Pups **in-den** (or `none`): pups outside stop being curious and head home on their own, about 100 px a tick. Each pup at home scores 1. Target jitter is a hash of the revision, so the same creek always moves the pups the same way. |
 | Den update | `den` (`pups`: `in-den`, `out`, `none`) | Sets the mode for the next tick. |
 | Trap fires | a new `reach.lastFrame.frame` at Beaver Flats | Every pup outside the holt and inside the camera's wedge is caught on camera: −5 each. The frame's real id and species show in the log line. |
-| Every frame | the animation loop (a frame counts for at most 250 ms, so a stall never jumps the clock) | Pups ease toward their targets (about 95% of the way in one tick). Pebble swims from the keyboard (arrows or WASD) or toward a pointer or touch. A pup within 84 px of Pebble is pushed away from her, and the push moves its target too, so herding sticks. A pup pushed into the holt is home and settles for 2 ticks before it can wander again. |
+| Every frame | the animation loop (a frame counts for at most 250 ms, so a stall never jumps the clock) | Pups ease toward their targets (about 95% of the way in one tick). Pebble moves from the keyboard (arrows or WASD) or toward a pointer or touch. A pup within 84 px of Pebble is pushed away from her, and the push moves its target too, so herding sticks. A pup pushed into the holt is home and settles for 2 ticks before it can wander again. A curious pup can't be pushed home: it slips back out to the holt's edge, so waiting at the holt mouth doesn't keep the pups in (owner's playtest, October 8, 2026). |
 | Bell | 60 s of live time | Each pup at home scores 10. |
 
 ### States
@@ -83,7 +85,7 @@ The field is 960 × 540 logical pixels: Holt A on the left, the Beaver Flats cam
 | Paused (stale) | any subscription not `live` (`stale`, `synchronizing`, `resync-required`, …) or the connection not `connected` | The field frozen and greyed where it was last known, the trap's flash included; "Lost the receiver" with each problem (`Holt A den: stale`, `connection: reconnecting`). The clock stops. |
 | Paused (hidden tab) | the page isn't visible | Nothing to see; the clock stops and no field tick or trap frame counts. Coming back resumes like a stale creek coming back, from a fresh snapshot. |
 | Resync required | a subscription is `resync-required` | The paused overlay adds a **Re-tune** button that calls that subscription's `resync()`. |
-| Resumed | everything live (and visible) again | `resync`: the pups are placed where the fresh den snapshot says (home, or just outside the holt), Pebble stays put, and any trap frame taken while paused is skipped, not scored. |
+| Resumed | everything live (and visible) again | `resync`: the pups are placed where the fresh den snapshot says (home, or just outside the holt and curious for 2 ticks, so a quick tab switch can't reset them into an easy push home), Pebble stays put, and any trap frame taken while paused is skipped, not scored. |
 | Over | the bell, or "End round" | The end screen; the round unmounts and its subscriptions close. Best score is kept in `localStorage` (a blocked store just means no best score). |
 
 ## The backend contract
@@ -96,6 +98,15 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 | Token | `POST {API}/api/badge` → `{ token }` | Always a new volunteer badge for a request from the game's origin; no cookie is sent or set. The request has no body or custom headers, so it needs no preflight. The provider's `getToken` asks for a fresh one on every connection, as the site does. |
 | Channels | `den` `{ holtId: "A" }`, `reach` `{ reachId: "beaver-flats" }`, `creekOverview` `{ watershed: "lontra" }` | All public: any volunteer badge may read them. The restricted `holt` channel (with the grid reference) is never used. |
 | Origin | `https://lontracreek.com` | Switched on by lontra-creek's `GAME_ORIGIN` (off by default): the gateway then accepts its sockets, and the field station answers it on `GET /api/config`, `GET /api/status` and `POST /api/badge` only (the game calls the first and last); never the Lab, the sandbox or notebooks. |
+
+## Look
+
+The game keeps its own creek look (cream ground, forest-green buttons, the painted field), and ties itself to StreamOtter through the header, the type and the state colors. The design team's pass on October 9, 2026 (approved by jason) set:
+
+- **Type:** streamotter.dev's fonts, self-hosted with Fontsource as the site does: Figtree for text and headings (800, -0.02em), JetBrains Mono for the HUD numbers, the drawer's data and keys. The canvas labels use Figtree too (`LABEL_FONT` in `render.ts`).
+- **Header:** StreamOtter's full horizontal lockup (30 px, 24 px on phones), a divider, then "Pup Patrol". Sticky and translucent, 64 px tall (56 px on phones). On phones the signal and **Live data** move to a second row.
+- **State colors:** "live" in streamotter.dev's cyan (`--live`: #00728a light, #01e1fc dark) for the signal bars and the drawer's live states; "Recording" is an amber chip. Buttons and links stay forest green.
+- **Start screen:** a still of the field in the same frame as the round's, with the start card overlapping its bottom edge by 48 px (32 px on phones, where the still is cropped to 2:1). It shows the pups in the holt and Pebble at her start. A recorded round's still is the recording's first creek frame. A live round has no creek before it mounts its subscriptions, so its still is a day, clear placeholder. On wide screens it is cropped to 21:9 at most, and shorter on shorter screens, so in live mode the title and **Start round** show without scrolling at 1280 × 800 and 1366 × 768 (the recorded-mode notice pushes them about 50 px lower). Landscape phones get a thin still. While the creek is being found it shows the empty field, and with no creek at all there is no still. The card opens with a mono eyebrow, "A 60-second game · Lontra Creek" (the length follows `?round`).
 
 ## Where the build differs from the plan
 
@@ -113,7 +124,7 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 - `test/creek.test.ts`: the recording validates against the copied schemas, and every game state shows up in it.
 - `scripts/test/check-release-pins.test.mjs`: the release-pin guard.
 - `e2e/round.spec.ts` (Playwright, against the local creek):
-  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down.
+  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down; the header's StreamOtter lockup and link (its name, `href` and new tab), the sticky header, a 320 px header that keeps the lockup with the actions on a second row and no horizontal scroll; the start screen's still, under the card's edge, gone once a round starts.
   - on Vite's dev server (`@dev` tests): the same round under React's StrictMode, which mounts every component twice and must still go live with exactly three subscriptions.
 - Not automated: `resync-required` and the **Re-tune** button (the local gateway has no way to force it), and a real network drop (hosted acceptance).
 

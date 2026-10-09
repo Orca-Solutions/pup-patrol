@@ -1,5 +1,5 @@
 /**
- * What the "Under the hood" drawer shows: each mounted subscription's state, revision and
+ * What the "Live data" drawer shows: each mounted subscription's state, revision and
  * update count, the client's connection state, and how often the round has rendered. The
  * round writes here; the drawer reads it a few times a second while open.
  */

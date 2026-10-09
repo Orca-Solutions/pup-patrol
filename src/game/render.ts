@@ -122,8 +122,11 @@ function otter(ctx: CanvasRenderingContext2D, at: Vec, size: number, body: strin
   ctx.restore();
 }
 
+/** The field's labels, in streamotter.dev's Figtree; the system font stands in until it loads. */
+export const LABEL_FONT = '600 14px "Figtree Variable", system-ui, sans-serif';
+
 function label(ctx: CanvasRenderingContext2D, text: string, at: Vec, color = "rgba(255,255,255,0.92)"): void {
-  ctx.font = "600 14px system-ui, sans-serif";
+  ctx.font = LABEL_FONT;
   ctx.textAlign = "center";
   ctx.lineWidth = 3;
   ctx.strokeStyle = "rgba(0,0,0,0.45)";
@@ -145,7 +148,8 @@ function pup(ctx: CanvasRenderingContext2D, value: Pup, now: number): void {
 }
 
 /** Draws one frame. */
-export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Scene): void {
+/** Draws one frame. With no game state, it draws the empty field: the creek, the holt and the trap. */
+export function draw(ctx: CanvasRenderingContext2D, state: GameState | null, scene: Scene): void {
   const colors = SKY[scene.daylight];
   ctx.save();
   ctx.clearRect(0, 0, FIELD.width, FIELD.height);
@@ -154,10 +158,12 @@ export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Sce
   const now = scene.stale || scene.reducedMotion ? 0 : scene.now;
   creek(ctx, colors, now);
   holt(ctx);
-  trap(ctx, state.flash?.age ?? null, scene.reducedMotion);
-  for (const value of state.pups) pup(ctx, value, now);
-  otter(ctx, state.pebble, 20, "#7b5130", 1);
-  label(ctx, "Pebble (you)", { x: state.pebble.x, y: state.pebble.y - 26 });
+  trap(ctx, state?.flash?.age ?? null, scene.reducedMotion);
+  if (state !== null) {
+    for (const value of state.pups) pup(ctx, value, now);
+    otter(ctx, state.pebble, 20, "#7b5130", 1);
+    label(ctx, "Pebble (you)", { x: state.pebble.x, y: state.pebble.y - 26 });
+  }
 
   if (scene.weather !== "clear" && !scene.stale) {
     ctx.strokeStyle = scene.weather === "storm" ? "rgba(220,230,255,0.55)" : "rgba(220,230,255,0.35)";

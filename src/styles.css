@@ -2,6 +2,9 @@
   --bg: #f3efe4;
   --ink: #1d2a22;
   --muted: #56645a;
+  /* StreamOtter's brand navy and its dark-scheme pair, from streamotter.dev. */
+  --brand-ink: #04183f;
+  --brand-whisker: #04183f;
   --card: #fffdf7;
   --line: #d9d2bf;
   --accent: #1f6b4f;
@@ -9,7 +12,12 @@
   --warn: #8a4b12;
   --error: #a3261b;
   --stale: #5c5c5c;
+  /* streamotter.dev's live cyan, and the recording chip's ground. */
+  --live: #00728a;
+  --rec-bg: #f6e7d4;
   --radius: 14px;
+  --font: "Figtree Variable", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, monospace;
   color-scheme: light;
 }
 
@@ -18,6 +26,8 @@
     --bg: #111814;
     --ink: #e7efe9;
     --muted: #a3b2a8;
+    --brand-ink: #e9f2fc;
+    --brand-whisker: #a9bad5;
     --card: #19231d;
     --line: #2d3a31;
     --accent: #48b08a;
@@ -25,6 +35,8 @@
     --warn: #f0b070;
     --error: #ff8a7a;
     --stale: #9a9a9a;
+    --live: #01e1fc;
+    --rec-bg: #3a2a17;
     color-scheme: dark;
   }
 }
@@ -35,39 +47,66 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
 }
 
 a { color: var(--accent); }
 
 .page { min-height: 100vh; display: flex; flex-direction: column; }
 
+/* Sticky and translucent, like streamotter.dev's header. */
 .top {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 64px; padding: 0 clamp(16px, 4vw, 40px);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--line);
 }
-.brand { display: flex; align-items: baseline; gap: 8px; }
-.brand-name { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.01em; }
-.brand-sub { color: var(--muted); font-size: 0.9rem; }
-.top-actions { display: flex; align-items: center; gap: 14px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+/* StreamOtter's lockup, as streamotter.dev has it: the S, "Stream" and whiskers follow the scheme. */
+.so-link { display: inline-flex; align-items: center; min-height: 24px; padding-block: 4px; }
+.so-lockup { display: block; }
+.so-lockup svg { display: block; height: 30px; width: auto; aspect-ratio: 1765.1 / 317.9; }
+.so-lockup .bi { fill: var(--brand-ink); stroke: var(--brand-ink); }
+.so-lockup .bw { fill: var(--brand-whisker); stroke: var(--brand-whisker); }
+.brand-divider { width: 1px; height: 28px; align-self: center; background: var(--line); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.brand-name { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; white-space: nowrap; }
+.brand-sub { color: var(--muted); font-size: 0.92rem; }
+.top-actions { display: flex; align-items: center; gap: 14px; white-space: nowrap; }
 
 .main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 16px; }
 .main:focus { outline: none; }
 
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 24px; max-width: 680px; margin: 24px auto;
+  padding: 28px; max-width: 680px; margin: 24px auto;
 }
-.card h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 12px; letter-spacing: -0.015em; }
+.card h1 { font-size: clamp(1.5rem, 3vw, 1.9rem); line-height: 1.12; margin: 0 0 12px; font-weight: 800; letter-spacing: -0.02em; }
+/* The start screen's still of the field, with the start card overlapping its bottom edge. */
+/*
+ * Cropped to 21:9 at most (2:1 on phones), and shorter on shorter screens, so in live mode the
+ * title and Start round show without scrolling at 1280 × 800 and 1366 × 768. Cropped low in the
+ * frame, so the card doesn't cover the holt's label.
+ */
+.field.still { margin-top: 8px; aspect-ratio: 21 / 9; max-height: max(260px, 100vh - 500px); }
+.field-still { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 75%; }
+.start-over-still { position: relative; margin-top: -48px; }
+.eyebrow { font: 600 0.75rem/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
 .small { color: var(--muted); font-size: 0.9rem; }
 .controls { padding-left: 18px; color: var(--muted); }
 kbd {
   display: inline-block; min-width: 1.6em; padding: 0 4px; margin: 0 2px; text-align: center;
-  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: inherit; font-size: 0.85em;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: inherit; font-family: var(--mono); font-size: 0.85em;
 }
 .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
 .final-score { font-size: 1.3rem; }
-.final-score strong { font-size: 2rem; }
+.final-score strong { font-size: 2rem; font-family: var(--mono); }
 
 .button {
   appearance: none; border: 0; border-radius: 999px; padding: 10px 18px; cursor: pointer;
@@ -87,10 +126,11 @@ kbd {
 .notice-error { border-left-color: var(--error); }
 
 .round { display: flex; flex-direction: column; gap: 10px; }
-.hud { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-variant-numeric: tabular-nums; }
-.hud-label { color: var(--muted); font-size: 0.85rem; }
+.hud { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.hud-label { color: var(--muted); font-size: 0.85rem; font-family: var(--font); }
 .hud-item strong { font-size: 1.15rem; }
-.hud-creek { color: var(--muted); font-size: 0.9rem; flex: 1; }
+.hud-creek { color: var(--muted); font-size: 0.9rem; flex: 1; font-family: var(--font); }
+.hud .link-button { font-family: var(--font); }
 
 .field { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
 .field-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
@@ -99,9 +139,9 @@ kbd {
   gap: 4px; padding: 16px; text-align: center; background: rgba(20, 28, 22, 0.62); color: #fff;
 }
 .overlay p { margin: 0; max-width: 520px; }
-.overlay-title { font-size: 1.4rem; font-weight: 800; }
+.overlay-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
 .overlay-stale { background: rgba(40, 40, 40, 0.55); }
-.problems { font-size: 0.85rem; opacity: 0.9; font-family: ui-monospace, monospace; }
+.problems { font-size: 0.85rem; opacity: 0.9; font-family: var(--mono); }
 .overlay .button { margin-top: 10px; }
 .badge-recorded {
   position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 999px;
@@ -112,9 +152,9 @@ kbd {
 .signal { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 .signal-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 18px; }
 .signal-bars span { width: 4px; background: var(--line); border-radius: 1px; }
-.signal-bars span.on { background: var(--accent); }
+.signal-bars span.on { background: var(--live); }
 .signal-reconnecting .signal-bars span.on, .signal-connecting .signal-bars span.on { background: var(--warn); animation: blink 1s infinite; }
-.signal-recorded { color: var(--warn); font-weight: 700; }
+.signal-recorded { color: var(--warn); background: var(--rec-bg); font-weight: 700; font-size: 0.82rem; padding: 4px 10px; border-radius: 999px; }
 @keyframes blink { 50% { opacity: 0.3; } }
 @media (prefers-reduced-motion: reduce) { .signal-bars span.on { animation: none !important; } }
 
@@ -123,22 +163,43 @@ kbd {
   background: var(--card); border-left: 1px solid var(--line); padding: 16px; box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
 }
 .drawer-head { display: flex; justify-content: space-between; align-items: center; }
-.drawer-head h2 { margin: 0; font-size: 1.15rem; }
+.drawer-head h2 { margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
 .drawer-note { color: var(--muted); font-size: 0.9rem; }
 .drawer-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
 .drawer-facts dt { color: var(--muted); }
-.drawer-facts dd { margin: 0; font-family: ui-monospace, monospace; }
+.drawer-facts dd { margin: 0; font-family: var(--mono); }
 .drawer-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .drawer-table th, .drawer-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .drawer-table code { font-size: 0.85em; word-break: break-all; }
-.state-live { color: var(--accent); font-weight: 700; }
+.state-live { color: var(--live); font-weight: 700; }
 .state-stale, .state-resync-required { color: var(--warn); font-weight: 700; }
 
-.foot { padding: 16px; color: var(--muted); font-size: 0.85rem; text-align: center; border-top: 1px solid var(--line); }
+.foot { padding: 20px 16px; color: var(--muted); font-size: 0.85rem; text-align: center; border-top: 1px solid var(--line); }
 .foot p { max-width: 760px; margin: 0 auto; }
 
 @media (max-width: 640px) {
   .card { padding: 18px; margin: 8px auto; }
+  /* Phones crop the still to 2:1, so the card's first lines show above the fold. */
+  .field.still { aspect-ratio: 2 / 1; }
+  .start-over-still { margin-top: -32px; }
   .card h1 { font-size: 1.3rem; }
   .brand-sub { display: none; }
+  .top { padding: 8px 16px; min-height: 56px; gap: 6px; }
+  .brand { gap: 10px; }
+  .so-lockup svg { height: 24px; }
+  .brand-divider { height: 22px; }
+  .brand-name { font-size: 1.1rem; }
+  /* Phones: the brand on the first row; the status and Live data on a second, spread apart. */
+  .top-actions { width: 100%; justify-content: space-between; gap: 10px; font-size: 0.9rem; }
+}
+
+/* Landscape phones and other short, wide screens: a thin still, so the title shows. */
+@media (max-height: 640px) and (min-width: 641px) {
+  .field.still { max-height: 180px; }
+  .field-still { object-position: 50% 90%; }
+}
+
+@media (forced-colors: active) {
+  .so-lockup { forced-color-adjust: none; }
+  .so-lockup .bi, .so-lockup .bw { fill: CanvasText; stroke: CanvasText; }
 }

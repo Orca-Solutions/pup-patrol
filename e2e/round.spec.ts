@@ -23,7 +23,7 @@ function watchSubscriptions(page: Page): { subscribes: number; unsubscribes: num
 async function startRound(page: Page, seconds = 12): Promise<void> {
   await page.goto(`/?round=${seconds}`);
   await page.getByRole("button", { name: "Start round" }).click();
-  await page.getByRole("button", { name: "Under the hood" }).click();
+  await page.getByRole("button", { name: "Live data" }).click();
   await expect(page.getByTestId("tuning")).toBeHidden({ timeout: 15_000 });
 }
 
@@ -109,6 +109,52 @@ test("a stale creek pauses the round on the last known state, and a fresh snapsh
   await expect(stale).toBeHidden({ timeout: 10_000 });
   await expect(page.getByTestId("log")).toContainText("fresh snapshot");
   await expect(page.getByTestId("hood-den")).toContainText("live");
+});
+
+test("the header carries StreamOtter's lockup, linking to streamotter.dev in a new tab", async ({ page }) => {
+  await page.route(`${CREEK}/api/**`, route => route.abort());
+  await page.goto("/");
+  const link = page.getByRole("banner").getByRole("link", { name: "StreamOtter (opens in a new tab)" });
+  await expect(link).toHaveAttribute("href", "https://streamotter.dev");
+  await expect(link).toHaveAttribute("target", "_blank");
+  await expect(link.locator(".so-lockup svg")).toBeVisible();
+  // The header stays put while the page scrolls.
+  await expect(page.getByRole("banner")).toHaveCSS("position", "sticky");
+  // Phones keep the whole lockup, and nothing scrolls sideways.
+  await page.setViewportSize({ width: 320, height: 640 });
+  await expect(link.locator(".so-lockup svg")).toBeVisible();
+  await expect(link).toHaveAccessibleName("StreamOtter (opens in a new tab)");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  // Phones put the status and Live data on a second row, under the brand.
+  const brand = await page.locator(".brand").boundingBox();
+  const actions = await page.locator(".top-actions").boundingBox();
+  expect(actions!.y).toBeGreaterThanOrEqual(brand!.y + brand!.height);
+});
+
+test("the start screen shows a still of the field above the start card", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Start round" })).toBeEnabled();
+  const still = page.getByTestId("field-still");
+  await expect(still).toBeVisible();
+  await expect(still).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByText("A 60-second game · Lontra Creek")).toBeVisible();
+  // The card overlaps the still's bottom edge.
+  const frame = await still.boundingBox();
+  const card = await page.locator(".start").boundingBox();
+  expect(card!.y).toBeLessThan(frame!.y + frame!.height);
+  expect(card!.y).toBeGreaterThan(frame!.y);
+  // In live mode, the title and Start round show without scrolling at 1280 × 800.
+  await page.evaluate(() => document.fonts.ready);
+  const button = await page.getByRole("button", { name: "Start round" }).boundingBox();
+  expect(button!.y + button!.height).toBeLessThanOrEqual(800);
+  // Phones crop the still to about 2:1.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phone = await still.boundingBox();
+  expect(phone!.width / phone!.height).toBeCloseTo(2, 1);
+  // The still goes once a round starts.
+  await page.getByRole("button", { name: "Start round" }).click();
+  await expect(still).toBeHidden();
 });
 
 test("without the demo backend, rounds replay the recording and say so", async ({ page }) => {
