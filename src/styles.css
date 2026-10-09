@@ -196,6 +196,7 @@ kbd {
 /* Landscape phones and other short, wide screens: a thin still, so the title shows. */
 @media (max-height: 640px) and (min-width: 641px) {
   .field.still { max-height: 180px; }
+  .field-still { object-position: 50% 90%; }
 }
 
 @media (forced-colors: active) {
