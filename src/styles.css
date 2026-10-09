@@ -85,15 +85,13 @@ a { color: var(--accent); }
 
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  --pad: 28px; padding: var(--pad); max-width: 680px; margin: 24px auto;
+  padding: 28px; max-width: 680px; margin: 24px auto;
 }
 .card h1 { font-size: clamp(1.5rem, 3vw, 1.9rem); line-height: 1.12; margin: 0 0 12px; font-weight: 800; letter-spacing: -0.02em; }
-.start { overflow: hidden; }
-/* The field still runs edge to edge across the top of the start card. */
-.field-still {
-  display: block; width: calc(100% + 2 * var(--pad)); aspect-ratio: 8 / 3;
-  margin: calc(-1 * var(--pad)) calc(-1 * var(--pad)) 20px; border-bottom: 1px solid var(--line);
-}
+/* The start screen's still of the field, with the start card overlapping its bottom edge. */
+.still { margin-top: 8px; }
+.field-still { display: block; width: 100%; height: 100%; object-fit: cover; }
+.start-over-still { position: relative; margin-top: -48px; }
 .eyebrow { font: 600 0.75rem/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
 .small { color: var(--muted); font-size: 0.9rem; }
 .controls { padding-left: 18px; color: var(--muted); }
@@ -175,7 +173,10 @@ kbd {
 .foot p { max-width: 760px; margin: 0 auto; }
 
 @media (max-width: 640px) {
-  .card { --pad: 18px; margin: 8px auto; }
+  .card { padding: 18px; margin: 8px auto; }
+  /* Phones crop the still to 2:1, so the card's first lines show above the fold. */
+  .still { aspect-ratio: 2 / 1; }
+  .start-over-still { margin-top: -32px; }
   .card h1 { font-size: 1.3rem; }
   .brand-sub { display: none; }
   .top { padding: 8px 16px; min-height: 56px; gap: 6px; }

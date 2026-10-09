@@ -25,8 +25,8 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
 - `npm run typecheck`: clean.
 - `npm test`: 33 pass (merged main had 29). The new engine tests cover the camping exploit with an active herder, the same exploit after a pause and resync, the dash out of the holt, and a curious pup still going home when called.
-- `npm run test:browser`: 7 pass, covering the build and the StrictMode dev server. The header test checks the StreamOtter lockup and link, the sticky header, and that a 320 px screen keeps the lockup with no sideways scroll.
-- Screenshots of the redesign (light, dark, 390 px and 320 px, start screen and a live round with the drawer open) were checked by eye. They aren't automated.
+- `npm run test:browser`: 8 pass, covering the build and the StrictMode dev server. The header test checks the StreamOtter lockup and link, the sticky header, and that a 320 px screen keeps the lockup, puts the actions on a second row and doesn't scroll sideways. Another checks the start screen's still and eyebrow.
+- Screenshots of the redesign (light, dark, 390 px and 320 px; the start screen live, recorded and while finding the creek; a live round with the drawer open) were checked by eye. They aren't automated.
 - CI runs the release-pin check only when started by hand. It fails by design until step 1 above.
 
 ## Review dispositions
@@ -35,3 +35,4 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 - After that re-check, the only changes have been docs and the domain (6fb7dbb, then the lontracreek.com commit) and this scaffold fill-in. No code changed.
 - Independent review of the polish PR, October 8. It found one major issue: a pause and resync (a quick tab switch) placed the pups at the holt mouth without being curious, which brought the exploit back. That is fixed, and resynced pups that are out are now curious. Two minor findings, a missing test for the dash and a mislabeled verification heading, and one doc nit are also fixed.
 - Independent review of the header commit, October 9. It found no blockers. Two small fixes followed: the DESIGN.md test list now names the header test (minor), and the StreamOtter link is at least 24 px tall, so the mark-only link on phones meets the 24 px target size (nit).
+- Independent review of the redesign commit (5e46070), October 9. No blockers or major findings. One minor finding fixed: the browser tests now cover the two-row phone header, the field still and the eyebrow. Nits: the eyebrow now follows the round length (fixed). JetBrains Mono's Latin subset has ↑ and ↓ but not ← and →, so those two keys fall back to the system mono (kept). The still's labels are too small to read on phones (kept: it's decorative). The still was then rebuilt to the design thread's spec (above the card, the round's first frame); that change has its own re-check.

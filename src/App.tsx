@@ -8,6 +8,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchCreekConfig, getToken, type CreekConfig } from "./backend.ts";
 import { recordedCreek, useLiveCreek, type Recording, type UseCreek } from "./creek.ts";
 import { ROUND_MS } from "./game/engine.ts";
+import type { Scene } from "./game/render.ts";
+import type { CreekOverview } from "./generated/streamotter.generated.ts";
 import { Drawer } from "./components/Drawer.tsx";
 import { Round, type RoundResult } from "./components/Round.tsx";
 import { SignalBar } from "./components/SignalBar.tsx";
@@ -51,6 +53,20 @@ function roundMs(): number {
 async function loadRecording(): Promise<Recording> {
   const module = await import("../creek/pup-patrol.json");
   return module.default as unknown as Recording;
+}
+
+/**
+ * The start screen's still: the round's first frame. A recorded round starts on the recording's
+ * first creek frame. A live round has no creek before it mounts its subscriptions (the drawer
+ * shows them mounting with the round), so it shows the scene a round draws until the creek
+ * arrives: day, clear. While the creek is being found, the field is empty.
+ */
+function stillScene(mode: Mode): { daylight: Scene["daylight"]; weather: Scene["weather"]; empty: boolean } {
+  if (mode.kind === "recorded") {
+    const first = mode.recording.initial.find(record => record.channel === "creekOverview")?.data as CreekOverview | undefined;
+    return { daylight: first?.daylight ?? "day", weather: first?.weather ?? "clear", empty: false };
+  }
+  return { daylight: "day", weather: "clear", empty: mode.kind === "loading" };
 }
 
 export function App() {
@@ -138,10 +154,10 @@ export function App() {
           <p className="notice notice-error" role="alert" data-testid="unavailable">{mode.reason} Try reloading the page.</p>
         )}
 
+        {screen.kind === "start" && mode.kind !== "unavailable" && <FieldStill {...stillScene(mode)} />}
         {screen.kind === "start" && (
-          <section className="card start" aria-labelledby="start-title">
-            <FieldStill />
-            <p className="eyebrow">A 60-second game · Lontra Creek</p>
+          <section className={mode.kind === "unavailable" ? "card start" : "card start start-over-still"} aria-labelledby="start-title">
+            <p className="eyebrow">A {Math.round(length / 1000)}-second game · Lontra Creek</p>
             <h1 id="start-title">Herd the pups home before the camera trap fires.</h1>
             <p>
               You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, are too young to swim,

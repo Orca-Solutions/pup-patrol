@@ -148,7 +148,8 @@ function pup(ctx: CanvasRenderingContext2D, value: Pup, now: number): void {
 }
 
 /** Draws one frame. */
-export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Scene): void {
+/** Draws one frame. With no game state, it draws the empty field: the creek, the holt and the trap. */
+export function draw(ctx: CanvasRenderingContext2D, state: GameState | null, scene: Scene): void {
   const colors = SKY[scene.daylight];
   ctx.save();
   ctx.clearRect(0, 0, FIELD.width, FIELD.height);
@@ -157,10 +158,12 @@ export function draw(ctx: CanvasRenderingContext2D, state: GameState, scene: Sce
   const now = scene.stale || scene.reducedMotion ? 0 : scene.now;
   creek(ctx, colors, now);
   holt(ctx);
-  trap(ctx, state.flash?.age ?? null, scene.reducedMotion);
-  for (const value of state.pups) pup(ctx, value, now);
-  otter(ctx, state.pebble, 20, "#7b5130", 1);
-  label(ctx, "Pebble (you)", { x: state.pebble.x, y: state.pebble.y - 26 });
+  trap(ctx, state?.flash?.age ?? null, scene.reducedMotion);
+  if (state !== null) {
+    for (const value of state.pups) pup(ctx, value, now);
+    otter(ctx, state.pebble, 20, "#7b5130", 1);
+    label(ctx, "Pebble (you)", { x: state.pebble.x, y: state.pebble.y - 26 });
+  }
 
   if (scene.weather !== "clear" && !scene.stale) {
     ctx.strokeStyle = scene.weather === "storm" ? "rgba(220,230,255,0.55)" : "rgba(220,230,255,0.35)";

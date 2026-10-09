@@ -24,7 +24,7 @@ How the game is built. [PLAN.md](PLAN.md) is the approved plan (what and why); t
 | `src/components/SignalBar.tsx` | The connection state as signal bars. | streamotter.ts |
 | `src/components/Drawer.tsx` | The Live data drawer. (It was "Under the hood" until October 9, 2026; that is now the name of StreamOtter's docs series.) | hood.ts |
 | `src/components/StreamOtterLink.tsx` | The header's StreamOtter lockup: streamotter.dev's horizontal lockup (`src/assets/streamotter-lockup.svg`, copied from lontra-creek's `apps/site/src/assets/brand/lockup-horizontal.svg`), linking to streamotter.dev in a new tab. Its S, "Stream" and whiskers follow the color scheme, as on streamotter.dev. | none |
-| `src/components/FieldStill.tsx` | A still of the field across the top of the start card: the renderer's `draw` on a staged state, painted again once Figtree loads. Decorative. | engine, render |
+| `src/components/FieldStill.tsx` | The start screen's still of the field: the round's first frame (pups in the holt, Pebble at her start) drawn once with the renderer's `draw`, and again once Figtree loads. The empty field while the creek is being found. Decorative. | engine, render |
 | `src/App.tsx` | Start, round and end screens; live or recorded mode; the `StreamOtterProvider` around the page in live mode. | everything above |
 | `src/generated/` | `streamotter generate` output for `creek/streamotter.json`. Never edited. | — |
 | `creek/streamotter.json` | The game's copy of the field station's public channel definitions (`den`, `reach`, `creekOverview`), as a fixture-mode project for the local creek. | — |
@@ -106,7 +106,7 @@ The game keeps its own creek look (cream ground, forest-green buttons, the paint
 - **Type:** streamotter.dev's fonts, self-hosted with Fontsource as the site does: Figtree for text and headings (800, -0.02em), JetBrains Mono for the HUD numbers, the drawer's data and keys. The canvas labels use Figtree too (`LABEL_FONT` in `render.ts`).
 - **Header:** StreamOtter's full horizontal lockup (30 px, 24 px on phones), a divider, then "Pup Patrol". Sticky and translucent, 64 px tall (56 px on phones). On phones the signal and **Live data** move to a second row.
 - **State colors:** "live" in streamotter.dev's cyan (`--live`: #00728a light, #01e1fc dark) for the signal bars and the drawer's live states; "Recording" is an amber chip. Buttons and links stay forest green.
-- **Start card:** a still of the field across the top and a mono eyebrow, "A 60-second game · Lontra Creek".
+- **Start screen:** a still of the field in the same frame as the round's, with the start card overlapping its bottom edge by 48 px (32 px on phones, where the still is cropped to 2:1). It is the round's first frame: a recorded round's first creek frame; for a live round, the day-and-clear scene a round draws until the creek arrives, since a live round has no creek before it mounts its subscriptions. While the creek is being found it shows the empty field, and with no creek at all there is no still. The card opens with a mono eyebrow, "A 60-second game · Lontra Creek" (the length follows `?round`).
 
 ## Where the build differs from the plan
 
@@ -124,7 +124,7 @@ The game keeps its own creek look (cream ground, forest-green buttons, the paint
 - `test/creek.test.ts`: the recording validates against the copied schemas, and every game state shows up in it.
 - `scripts/test/check-release-pins.test.mjs`: the release-pin guard.
 - `e2e/round.spec.ts` (Playwright, against the local creek):
-  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down; the header's StreamOtter lockup and link (its name, `href` and new tab), the sticky header, and a 320 px header that keeps the lockup with no horizontal scroll.
+  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down; the header's StreamOtter lockup and link (its name, `href` and new tab), the sticky header, a 320 px header that keeps the lockup with the actions on a second row and no horizontal scroll; the start screen's still, under the card's edge, gone once a round starts.
   - on Vite's dev server (`@dev` tests): the same round under React's StrictMode, which mounts every component twice and must still go live with exactly three subscriptions.
 - Not automated: `resync-required` and the **Re-tune** button (the local gateway has no way to force it), and a real network drop (hosted acceptance).
 

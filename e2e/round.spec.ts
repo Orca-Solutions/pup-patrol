@@ -125,6 +125,28 @@ test("the header carries StreamOtter's lockup, linking to streamotter.dev in a n
   await expect(link.locator(".so-lockup svg")).toBeVisible();
   await expect(link).toHaveAccessibleName("StreamOtter (opens in a new tab)");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  // Phones put the status and Live data on a second row, under the brand.
+  const brand = await page.locator(".brand").boundingBox();
+  const actions = await page.locator(".top-actions").boundingBox();
+  expect(actions!.y).toBeGreaterThanOrEqual(brand!.y + brand!.height);
+});
+
+test("the start screen shows a still of the field above the start card", async ({ page }) => {
+  await page.route(`${CREEK}/api/**`, route => route.abort());
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Start round" })).toBeEnabled();
+  const still = page.getByTestId("field-still");
+  await expect(still).toBeVisible();
+  await expect(still).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByText("A 60-second game · Lontra Creek")).toBeVisible();
+  // The card overlaps the still's bottom edge.
+  const frame = await still.boundingBox();
+  const card = await page.locator(".start").boundingBox();
+  expect(card!.y).toBeLessThan(frame!.y + frame!.height);
+  expect(card!.y).toBeGreaterThan(frame!.y);
+  // The still goes once a round starts.
+  await page.getByRole("button", { name: "Start round" }).click();
+  await expect(still).toBeHidden();
 });
 
 test("without the demo backend, rounds replay the recording and say so", async ({ page }) => {
