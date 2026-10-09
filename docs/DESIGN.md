@@ -19,11 +19,12 @@ How the game is built. [PLAN.md](PLAN.md) is the approved plan (what and why); t
 | `src/streamotter.ts` | The typed hooks (`createStreamOtterHooks<AppChannels>()`) and the provider. One of two files that import StreamOtter. | `streamotter/react`, generated types |
 | `src/creek.ts` | Where a round gets the creek: `useLiveCreek` (three `useSubscription` calls and `useConnectionState`, the other StreamOtter file) or `recordedCreek(recording, tickMs)`, both returning a `CreekFeed`. | streamotter.ts, hood.ts |
 | `src/backend.ts` | The field station's `/api/config` and `/api/badge`, and `getToken` for the provider. | fetch |
-| `src/hood.ts` | A tiny store for the "Under the hood" drawer: mounted subscriptions, connection state, render count. | React |
+| `src/hood.ts` | A tiny store for the "Live data" drawer: mounted subscriptions, connection state, render count. | React |
 | `src/components/Round.tsx` | One round: calls the feed hook, hands creek changes to the engine in effects, runs the animation loop, renders the HUD and overlays. | engine, render, creek |
 | `src/components/SignalBar.tsx` | The connection state as signal bars. | streamotter.ts |
-| `src/components/Drawer.tsx` | Under the hood. | hood.ts |
-| `src/components/StreamOtterLink.tsx` | The header's StreamOtter lockup: streamotter.dev's brand mark (`src/assets/streamotter-mark.svg`, copied from lontra-creek's `apps/site/src/assets/brand/mark.svg`) and the name, linking to streamotter.dev in a new tab. The mark's S and whiskers follow the color scheme, as on streamotter.dev. | none |
+| `src/components/Drawer.tsx` | The Live data drawer. (It was "Under the hood" until October 9, 2026; that is now the name of StreamOtter's docs series.) | hood.ts |
+| `src/components/StreamOtterLink.tsx` | The header's StreamOtter lockup: streamotter.dev's horizontal lockup (`src/assets/streamotter-lockup.svg`, copied from lontra-creek's `apps/site/src/assets/brand/lockup-horizontal.svg`), linking to streamotter.dev in a new tab. Its S, "Stream" and whiskers follow the color scheme, as on streamotter.dev. | none |
+| `src/components/FieldStill.tsx` | A still of the field across the top of the start card: the renderer's `draw` on a staged state, painted again once Figtree loads. Decorative. | engine, render |
 | `src/App.tsx` | Start, round and end screens; live or recorded mode; the `StreamOtterProvider` around the page in live mode. | everything above |
 | `src/generated/` | `streamotter generate` output for `creek/streamotter.json`. Never edited. | — |
 | `creek/streamotter.json` | The game's copy of the field station's public channel definitions (`den`, `reach`, `creekOverview`), as a fixture-mode project for the local creek. | — |
@@ -98,6 +99,15 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 | Channels | `den` `{ holtId: "A" }`, `reach` `{ reachId: "beaver-flats" }`, `creekOverview` `{ watershed: "lontra" }` | All public: any volunteer badge may read them. The restricted `holt` channel (with the grid reference) is never used. |
 | Origin | `https://lontracreek.com` | Switched on by lontra-creek's `GAME_ORIGIN` (off by default): the gateway then accepts its sockets, and the field station answers it on `GET /api/config`, `GET /api/status` and `POST /api/badge` only (the game calls the first and last); never the Lab, the sandbox or notebooks. |
 
+## Look
+
+The game keeps its own creek look (cream ground, forest-green buttons, the painted field), and ties itself to StreamOtter through the header, the type and the state colors. The design team's pass on October 9, 2026 (approved by jason) set:
+
+- **Type:** streamotter.dev's fonts, self-hosted with Fontsource as the site does: Figtree for text and headings (800, -0.02em), JetBrains Mono for the HUD numbers, the drawer's data and keys. The canvas labels use Figtree too (`LABEL_FONT` in `render.ts`).
+- **Header:** StreamOtter's full horizontal lockup (30 px, 24 px on phones), a divider, then "Pup Patrol". Sticky and translucent, 64 px tall (56 px on phones). On phones the signal and **Live data** move to a second row.
+- **State colors:** "live" in streamotter.dev's cyan (`--live`: #00728a light, #01e1fc dark) for the signal bars and the drawer's live states; "Recording" is an amber chip. Buttons and links stay forest green.
+- **Start card:** a still of the field across the top and a mono eyebrow, "A 60-second game · Lontra Creek".
+
 ## Where the build differs from the plan
 
 - **The den view carries only `pups`.** The plan sketched `{ holtId, reachId, occupied, pupsAtDen, lastEntry, lastExit }`. The build publishes `{ holtId, pups: "in-den" | "out" | "none" }`. `occupied` and the entry and exit times would say when an adult is in the den, and the holt's reach would place a denning otter, both of which the public otter view deliberately withholds; the game needs only the pups. `none` covers Holt B, which has no litter. It has its own topic, `field.dens`, and is kept off Failure Lab benches like `holt`.
@@ -114,7 +124,7 @@ The game is a client of the Lontra Creek demo backend (the lontra-creek reposito
 - `test/creek.test.ts`: the recording validates against the copied schemas, and every game state shows up in it.
 - `scripts/test/check-release-pins.test.mjs`: the release-pin guard.
 - `e2e/round.spec.ts` (Playwright, against the local creek):
-  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down; the header's StreamOtter link (its name, `href` and new tab) and a 320 px header with no horizontal scroll.
+  - on the production build: a round with three live subscriptions, counted as `so:subscribe` and `so:unsubscribe` requests on the page's socket (three of each, none left open after the round); a hidden tab pausing and resuming, including a round that starts while hidden; a forced stale state (the local creek's `POST /api/dev/pause-source`) and the resume; the recording fallback when the backend is down; the header's StreamOtter lockup and link (its name, `href` and new tab), the sticky header, and a 320 px header that keeps the lockup with no horizontal scroll.
   - on Vite's dev server (`@dev` tests): the same round under React's StrictMode, which mounts every component twice and must still go live with exactly three subscriptions.
 - Not automated: `resync-required` and the **Re-tune** button (the local gateway has no way to force it), and a real network drop (hosted acceptance).
 

@@ -13,6 +13,7 @@ import { Round, type RoundResult } from "./components/Round.tsx";
 import { SignalBar } from "./components/SignalBar.tsx";
 import { StreamOtterProvider } from "./streamotter.ts";
 import { StreamOtterLink } from "./components/StreamOtterLink.tsx";
+import { FieldStill } from "./components/FieldStill.tsx";
 
 type Mode =
   | { kind: "loading" }
@@ -125,7 +126,7 @@ export function App() {
         <div className="top-actions">
           {mode.kind === "live" && <SignalBar />}
           {mode.kind === "recorded" && <span className="signal signal-recorded" data-testid="signal" data-state="recorded">Recording</span>}
-          <button type="button" className="link-button" aria-expanded={drawer} aria-controls="drawer" onClick={() => setDrawer(open => !open)}>Under the hood</button>
+          <button type="button" className="link-button" aria-expanded={drawer} aria-controls="drawer" onClick={() => setDrawer(open => !open)}>Live data</button>
         </div>
       </header>
 
@@ -139,6 +140,8 @@ export function App() {
 
         {screen.kind === "start" && (
           <section className="card start" aria-labelledby="start-title">
+            <FieldStill />
+            <p className="eyebrow">A 60-second game · Lontra Creek</p>
             <h1 id="start-title">Herd the pups home before the camera trap fires.</h1>
             <p>
               You are Pebble (LO-07), a river otter on Lontra Creek. Sprout and Skipper, her pups, are too young to swim,

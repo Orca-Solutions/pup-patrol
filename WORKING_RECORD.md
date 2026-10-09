@@ -2,13 +2,14 @@
 
 Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
-## State (October 8, 2026)
+## State (October 9, 2026)
 
 - **Build:** the game, the local creek, tests and docs merged to `main` in PR #1 (090dee5, October 6). A playable preview of that build, replaying the recording, is a private claude.ai artifact.
 - **In progress:** the polish PR after #1 (October 8, from the owner's playtest of the preview):
   - "Swim" becomes "move": the field is the riverbank, and pups that young can't swim yet.
   - Camping at the holt mouth no longer keeps the pups home: a pup that just came out is curious for 2 ticks and can't be pushed back in.
-  - The header carries StreamOtter's branding (owner's ask, October 9): streamotter.dev's mark and the name, linking to streamotter.dev in a new tab.
+  - The header carries StreamOtter's branding (owner's ask, October 9), linking to streamotter.dev in a new tab.
+  - The design team's pass, approved by the owner on October 9 with both optional items: streamotter.dev's fonts (Figtree, JetBrains Mono), StreamOtter's full lockup in a sticky translucent header, "live" in streamotter.dev's cyan, a "Recording" chip, a two-row phone header, and a field still and an eyebrow on the start card. The drawer is renamed "Live data", since "StreamOtter Under the Hood" is now the name of the docs series. See [docs/DESIGN.md](docs/DESIGN.md#look).
 - **Backend:** the den channel, the `GAME_ORIGIN` switch, the recording and the streamotter.dev explainer are in jfricano/lontra-creek#49, a draft held by the Lontra Creek main freeze.
 - **Domain:** lontracreek.com (owner's choice, October 6). Nothing is deployed.
 - **Scope and spec:** `PROJECT_BRIEF.md` and `docs/SPEC.md` are still empty. The approved plan is [docs/PLAN.md](docs/PLAN.md), and [docs/DESIGN.md](docs/DESIGN.md) describes what was built and where it differs from the plan.
@@ -24,7 +25,8 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
 - `npm run typecheck`: clean.
 - `npm test`: 33 pass (merged main had 29). The new engine tests cover the camping exploit with an active herder, the same exploit after a pause and resync, the dash out of the holt, and a curious pup still going home when called.
-- `npm run test:browser`: 7 pass, covering the build and the StrictMode dev server. The new test checks the header's StreamOtter link, and that the header fits a 320 px screen.
+- `npm run test:browser`: 7 pass, covering the build and the StrictMode dev server. The header test checks the StreamOtter lockup and link, the sticky header, and that a 320 px screen keeps the lockup with no sideways scroll.
+- Screenshots of the redesign (light, dark, 390 px and 320 px, start screen and a live round with the drawer open) were checked by eye. They aren't automated.
 - CI runs the release-pin check only when started by hand. It fails by design until step 1 above.
 
 ## Review dispositions

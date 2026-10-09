@@ -17,7 +17,7 @@ It is the demo for `streamotter/react`, StreamOtter's React hooks, which ship in
 | `useConnectionState` | The signal bars in the header. |
 | `stale` | The round pauses, greyed, on the last known creek: "Lost the receiver". |
 | Reconnect and resync | The fresh snapshot resets the pups; the game doesn't guess what happened meanwhile. `resync-required` shows a Re-tune button that calls `resync()`. |
-| Mount and unmount | A round mounts its three subscriptions; the end screen unmounts them. Open **Under the hood** to watch. |
+| Mount and unmount | A round mounts its three subscriptions; the end screen unmounts them. Open **Live data** to watch. |
 | Params by value | The round re-renders several times a second with new params objects; the subscriptions stay the same ones. |
 | Audience rules | The den view says only whether the pups are home. The den's location stays on the researchers-only channel. |
 

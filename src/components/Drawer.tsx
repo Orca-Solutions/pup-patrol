@@ -1,5 +1,5 @@
 /**
- * Under the hood: what StreamOtter is doing for the round. A round mounts three
+ * Live data: what StreamOtter is doing for the round. A round mounts three
  * subscriptions and the end screen unmounts them, so the list empties between rounds.
  */
 import { useEffect, useState } from "react";
@@ -16,9 +16,9 @@ export function Drawer(props: { open: boolean; onClose(): void; mode: string }) 
   }, [props.open]);
   if (!props.open) return null;
   return (
-    <aside id="drawer" className="drawer" aria-label="Under the hood" data-testid="drawer">
+    <aside id="drawer" className="drawer" aria-label="Live data" data-testid="drawer">
       <div className="drawer-head">
-        <h2>Under the hood</h2>
+        <h2>Live data</h2>
         <button type="button" className="link-button" onClick={props.onClose}>Close</button>
       </div>
       <p className="drawer-note">

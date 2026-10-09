@@ -23,7 +23,7 @@ function watchSubscriptions(page: Page): { subscribes: number; unsubscribes: num
 async function startRound(page: Page, seconds = 12): Promise<void> {
   await page.goto(`/?round=${seconds}`);
   await page.getByRole("button", { name: "Start round" }).click();
-  await page.getByRole("button", { name: "Under the hood" }).click();
+  await page.getByRole("button", { name: "Live data" }).click();
   await expect(page.getByTestId("tuning")).toBeHidden({ timeout: 15_000 });
 }
 
@@ -111,14 +111,18 @@ test("a stale creek pauses the round on the last known state, and a fresh snapsh
   await expect(page.getByTestId("hood-den")).toContainText("live");
 });
 
-test("the header carries StreamOtter's mark and name, linking to streamotter.dev in a new tab", async ({ page }) => {
+test("the header carries StreamOtter's lockup, linking to streamotter.dev in a new tab", async ({ page }) => {
   await page.route(`${CREEK}/api/**`, route => route.abort());
   await page.goto("/");
   const link = page.getByRole("banner").getByRole("link", { name: "StreamOtter (opens in a new tab)" });
   await expect(link).toHaveAttribute("href", "https://streamotter.dev");
   await expect(link).toHaveAttribute("target", "_blank");
-  await expect(link.locator(".so-mark svg")).toBeVisible();
+  await expect(link.locator(".so-lockup svg")).toBeVisible();
+  // The header stays put while the page scrolls.
+  await expect(page.getByRole("banner")).toHaveCSS("position", "sticky");
+  // Phones keep the whole lockup, and nothing scrolls sideways.
   await page.setViewportSize({ width: 320, height: 640 });
+  await expect(link.locator(".so-lockup svg")).toBeVisible();
   await expect(link).toHaveAccessibleName("StreamOtter (opens in a new tab)");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });

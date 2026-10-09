@@ -122,8 +122,11 @@ function otter(ctx: CanvasRenderingContext2D, at: Vec, size: number, body: strin
   ctx.restore();
 }
 
+/** The field's labels, in streamotter.dev's Figtree; the system font stands in until it loads. */
+export const LABEL_FONT = '600 14px "Figtree Variable", system-ui, sans-serif';
+
 function label(ctx: CanvasRenderingContext2D, text: string, at: Vec, color = "rgba(255,255,255,0.92)"): void {
-  ctx.font = "600 14px system-ui, sans-serif";
+  ctx.font = LABEL_FONT;
   ctx.textAlign = "center";
   ctx.lineWidth = 3;
   ctx.strokeStyle = "rgba(0,0,0,0.45)";
