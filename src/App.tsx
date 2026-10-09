@@ -56,10 +56,10 @@ async function loadRecording(): Promise<Recording> {
 }
 
 /**
- * The start screen's still: the round's first frame. A recorded round starts on the recording's
- * first creek frame. A live round has no creek before it mounts its subscriptions (the drawer
- * shows them mounting with the round), so it shows the scene a round draws until the creek
- * arrives: day, clear. While the creek is being found, the field is empty.
+ * The start screen's still. A recorded round starts on the recording's first creek frame, so the
+ * still shows that. A live round has no creek before it mounts its subscriptions (the drawer
+ * shows them mounting with the round), so its still is a placeholder: day, clear, the pups in
+ * the holt. While the creek is being found, the field is empty.
  */
 function stillScene(mode: Mode): { daylight: Scene["daylight"]; weather: Scene["weather"]; empty: boolean } {
   if (mode.kind === "recorded") {

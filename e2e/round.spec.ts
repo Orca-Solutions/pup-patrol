@@ -132,7 +132,7 @@ test("the header carries StreamOtter's lockup, linking to streamotter.dev in a n
 });
 
 test("the start screen shows a still of the field above the start card", async ({ page }) => {
-  await page.route(`${CREEK}/api/**`, route => route.abort());
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Start round" })).toBeEnabled();
   const still = page.getByTestId("field-still");
@@ -144,6 +144,13 @@ test("the start screen shows a still of the field above the start card", async (
   const card = await page.locator(".start").boundingBox();
   expect(card!.y).toBeLessThan(frame!.y + frame!.height);
   expect(card!.y).toBeGreaterThan(frame!.y);
+  // The title and Start round show without scrolling at 1280 × 800.
+  const button = await page.getByRole("button", { name: "Start round" }).boundingBox();
+  expect(button!.y + button!.height).toBeLessThanOrEqual(800);
+  // Phones crop the still to about 2:1.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phone = await still.boundingBox();
+  expect(phone!.width / phone!.height).toBeCloseTo(2, 1);
   // The still goes once a round starts.
   await page.getByRole("button", { name: "Start round" }).click();
   await expect(still).toBeHidden();

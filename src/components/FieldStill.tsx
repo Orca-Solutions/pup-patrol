@@ -1,7 +1,7 @@
 /**
  * A still of the field above the start card, so the first screen shows the game and not only
- * text: the round's first frame, with the pups in the holt and Pebble at her start. No animation
- * loop. While the creek is still being found it shows the empty field. Decoration only (hidden
+ * text: the pups in the holt and Pebble at her start, in the given daylight and weather. No
+ * animation loop. While the creek is still being found it shows the empty field. Decoration only (hidden
  * from assistive tech); the card's text says the same.
  */
 import { useEffect, useRef } from "react";
