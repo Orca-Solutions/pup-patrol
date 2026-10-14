@@ -2,7 +2,7 @@
 
 Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 
-## State (October 9, 2026)
+## State (October 12, 2026)
 
 - **Build:** the game, the local creek, tests and docs merged to `main` in PR #1 (090dee5, October 6). A playable preview of that build, replaying the recording, is a private claude.ai artifact.
 - **In progress:** the polish PR after #1 (October 8, from the owner's playtest of the preview):
@@ -10,6 +10,7 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
   - Camping at the holt mouth no longer keeps the pups home: a pup that just came out is curious for 2 ticks and can't be pushed back in.
   - The header carries StreamOtter's branding (owner's ask, October 9), linking to streamotter.dev in a new tab.
   - The design team's pass, approved by the owner on October 9 with both optional items: streamotter.dev's fonts (Figtree, JetBrains Mono), StreamOtter's full lockup in a sticky translucent header, "live" in streamotter.dev's cyan, a "Recording" chip, a two-row phone header, and a field still and an eyebrow on the start card. The drawer is renamed "Live data", since "StreamOtter Under the Hood" is now the name of the docs series. See [docs/DESIGN.md](docs/DESIGN.md#look).
+- **Repository:** being made public (owner, October 12). The agent operating policy and entry points (`SOFTWARE_OPERATING_GUIDE.md`, `HANDOFF_TEMPLATES.md`, `CLAUDE.md`, `AGENTS.md`, `.claude/`) are no longer tracked and are in `.gitignore`; they stay in the owner's checkout and in the git history.
 - **Backend:** the den channel, the `GAME_ORIGIN` switch, the recording and the streamotter.dev explainer are in jfricano/lontra-creek#49, a draft held by the Lontra Creek main freeze.
 - **Domain:** lontracreek.com (owner's choice, October 6). Nothing is deployed.
 - **Scope and spec:** `PROJECT_BRIEF.md` and `docs/SPEC.md` are still empty. The approved plan is [docs/PLAN.md](docs/PLAN.md), and [docs/DESIGN.md](docs/DESIGN.md) describes what was built and where it differs from the plan.
@@ -39,3 +40,4 @@ Current state of Pup Patrol, kept up to date in each PR. Times are Pacific.
 - Re-check of the rebuilt still (5ce98bc), October 9. No blockers or major findings. One minor finding fixed: the docs and a comment called the live still the round's first frame, but a live round's first frame already has the creek's daylight, weather and pups, so the live still is now described as a placeholder. Nits: the WORKING_RECORD entry (this one, fixed); the card covered the still's "Holt A" label at some widths (fixed by cropping lower in the frame); the test didn't cover the phone crop (fixed). The design thread then asked for a shorter desktop still so the title and Start round fit at 1280 × 800; that crop is in the same commit as these fixes.
 - Re-check of the shorter still (5373793), October 9. No blockers or major findings. Two minor findings fixed: the docs now say the fold holds in live mode (the recorded-mode notice pushes it about 50 px lower), and the fold test waits for the fonts. Nits: landscape phones and 1366 × 768 missed the fold (fixed: a lower floor and a thin still on short, wide screens); about 1 px of the tiny "Holt A" label under the card at 320 px, and the still is wider than 21:9 when the height cap applies (kept, and the CSS comment now says "21:9 at most").
 - Repair check of 196941a, October 9. The repairs hold. One new minor finding fixed: on screens 640 px tall or less, the thin still put "Holt A" under the card, so that rule now crops lower in the frame. That fix is one CSS line, checked by screenshots at 844 × 390, 641 × 600 and 1440 × 600 and by the browser tests, not by another review.
+- Independent review of the policy-file change (f2251ab), October 12. Nothing in the repository depends on the untracked files: typecheck, unit tests and the build pass in a clean clone without them, and the restore command works. Both major findings are the owner's calls, raised with him before merge: the files stay readable in the git history once the repository is public, and fresh clones lose CLAUDE.md, AGENTS.md and `.claude/settings.json` (whose attribution setting the commit-msg hook also covers, once installed). Kept: `docs/AGENT_ROLES.md` stays tracked and still points to the local-only files, as `docs/README.md` notes.
