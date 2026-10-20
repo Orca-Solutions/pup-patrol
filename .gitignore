@@ -9,9 +9,10 @@ dist/
 /test-results/
 /blob-report/
 
-# The owner's agent operating policy and entry points: kept locally, not in the public repo.
+# Private companion guides and local agent state remain excluded where listed.
 /SOFTWARE_OPERATING_GUIDE.md
 /HANDOFF_TEMPLATES.md
-/CLAUDE.md
-/AGENTS.md
 /.claude/
+
+# Personal agent overrides stay local.
+CLAUDE.local.md
