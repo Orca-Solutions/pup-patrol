@@ -75,3 +75,7 @@ Not set up yet; nothing deploys without the owner's go. The plan: a static build
 ## License
 
 MIT. Lontra Creek, its otters and its study are fictional.
+
+## Shared agent instructions
+
+`AGENTS.md` and `CLAUDE.md` are shared project instructions and stay tracked in this repository so local and cloud agents can read them. Keep personal overrides in ignored `CLAUDE.local.md`; credentials and session state stay private. Existing project-specific instructions and permissions continue to apply.
